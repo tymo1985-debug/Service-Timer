@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Учёт служения</title>
+<meta name="theme-color" content="#0F6E56">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Служение">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F2F3EF;
+    --paper: #FFFFFF;
+    --paper-2: #FAFAF7;
+    --ink: #1E2422;
+    --ink-soft: #5B655F;
+    --ink-faint: #93998F;
+    --line: #DEE1D9;
+    --line-strong: #C7CBC0;
+    --teal: #0F6E56;
+    --teal-deep: #085041;
+    --teal-light: #E1F5EE;
+    --teal-mid: #5DCAA5;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --red: #A32D2D;
+    --red-light: #FCEBEB;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --shadow: 0 1px 2px rgba(20,30,26,0.04), 0 2px 10px rgba(20,30,26,0.05);
+  }
+  [data-theme="dark"]{
+    --bg: #121513;
+    --paper: #1A1F1C;
+    --paper-2: #171B19;
+    --ink: #ECEEEA;
+    --ink-soft: #A2AAA3;
+    --ink-faint: #6C736D;
+    --line: #2A302B;
+    --line-strong: #3A423C;
+    --teal: #4FCBA3;
+    --teal-deep: #9FE1CB;
+    --teal-light: #17332B;
+    --teal-mid: #1D9E75;
+    --amber: #EF9F27;
+    --amber-light: #3A2C13;
+    --red: #F09595;
+    --red-light: #3A1E1E;
+    --shadow: 0 1px 2px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.28);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  #app{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding-bottom:84px; }
+
+  /* top bar */
+  .topbar{ padding:20px 20px 6px; }
+  .topbar h1{ font-size:15px; font-weight:600; margin:0; letter-spacing:0.01em; color:var(--ink-soft); text-transform:uppercase; font-size:12px; letter-spacing:0.08em; }
+  .topbar .date{ font-size:22px; font-weight:600; margin-top:2px; }
+
+  main{ flex:1; padding:8px 20px 20px; }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* timer card */
+  .timer-card{ background:var(--paper); border:1px solid var(--line); border-radius:20px; padding:28px 20px 22px; box-shadow:var(--shadow); text-align:center; margin-top:8px; }
+  .timer-ring-wrap{ position:relative; width:230px; height:230px; margin:0 auto 6px; }
+  .timer-ring-wrap svg{ width:100%; height:100%; transform:rotate(-90deg); }
+  .ring-track{ fill:none; stroke:var(--line); stroke-width:5; }
+  .ring-progress{ fill:none; stroke:var(--teal); stroke-width:5; stroke-linecap:round; stroke-dasharray:8 6; transition:stroke-dashoffset 1s linear; }
+  .timer-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .timer-digits{ font-family:'JetBrains Mono',monospace; font-size:38px; font-weight:600; letter-spacing:0.01em; font-variant-numeric:tabular-nums; }
+  .timer-label{ font-size:12px; color:var(--ink-faint); margin-top:4px; text-transform:uppercase; letter-spacing:0.08em; }
+
+  .timer-meta{ display:flex; justify-content:center; gap:28px; margin:14px 0 20px; font-size:13px; color:var(--ink-soft); }
+  .timer-meta b{ display:block; font-size:15px; color:var(--ink); font-weight:600; margin-top:2px; }
+
+  .big-btn{ width:100%; border:none; border-radius:16px; padding:18px; font-size:17px; font-weight:600; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:10px; transition:transform .08s ease; }
+  .big-btn:active{ transform:scale(0.98); }
+  .big-btn.start{ background:var(--teal); color:#fff; }
+  .big-btn.stop{ background:var(--red); color:#fff; }
+  .icon{ font-size:20px; line-height:1; }
+
+  .note-btn{ width:100%; margin-top:12px; border:1px solid var(--line); background:var(--paper-2); color:var(--ink-soft); border-radius:12px; padding:12px; font-size:14px; font-family:inherit; cursor:pointer; }
+  .note-btn:active{ background:var(--line); }
+
+  /* stats */
+  .stats-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:16px; }
+  .stat-card{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:12px 10px; text-align:center; }
+  .stat-card .label{ font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.04em; }
+  .stat-card .value{ font-size:16px; font-weight:600; margin-top:4px; }
+
+  .goal-card{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-top:12px; }
+  .goal-top{ display:flex; justify-content:space-between; font-size:13px; color:var(--ink-soft); margin-bottom:8px; }
+  .goal-top b{ color:var(--ink); }
+  .goal-bar{ height:8px; border-radius:5px; background:var(--line); overflow:hidden; }
+  .goal-fill{ height:100%; background:var(--teal); border-radius:5px; transition:width .4s ease; }
+  .goal-fill.over{ background:var(--amber); }
+
+  /* section headers */
+  .section-title{ font-size:12px; font-weight:600; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.07em; margin:22px 0 8px; }
+
+  /* calendar */
+  .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .cal-nav button{ border:1px solid var(--line); background:var(--paper); border-radius:9px; width:34px; height:34px; font-size:16px; cursor:pointer; color:var(--ink); }
+  .cal-nav .month-label{ font-weight:600; font-size:15px; }
+  .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+  .cal-dow{ font-size:10px; color:var(--ink-faint); text-align:center; padding-bottom:4px; }
+  .cal-day{ aspect-ratio:1; border-radius:10px; border:1px solid var(--line); background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; cursor:pointer; position:relative; padding:2px; }
+  .cal-day.empty{ visibility:hidden; }
+  .cal-day .d{ font-weight:600; font-size:12px; }
+  .cal-day .t{ font-size:9px; color:var(--teal); margin-top:1px; text-align:center; line-height:1.1; }
+  .cal-day.has-time{ background:var(--teal-light); border-color:var(--teal-mid); }
+  .cal-day.selected{ outline:2px solid var(--teal); }
+  .cal-day.today{ box-shadow:inset 0 0 0 1.5px var(--ink-faint); }
+  .day-detail{ margin-top:14px; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .day-detail h4{ margin:0 0 8px; font-size:14px; }
+  .day-detail .entry{ font-size:13px; padding:6px 0; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; }
+  .day-detail .entry:last-child{ border-bottom:none; }
+
+  /* history */
+  .hist-row{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:8px; }
+  .hist-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .hist-top .when{ font-size:13px; }
+  .hist-top .when b{ font-weight:600; }
+  .hist-top .dur{ font-size:13px; font-weight:600; color:var(--teal); }
+  .hist-note{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
+  .hist-actions{ display:flex; gap:6px; margin-top:8px; }
+  .hist-actions button, .chk-wrap{ font-size:12px; border:1px solid var(--line); background:var(--paper-2); border-radius:8px; padding:5px 9px; cursor:pointer; color:var(--ink-soft); font-family:inherit; }
+  .hist-actions button.danger{ color:var(--red); }
+  .edit-form{ margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .edit-form label{ font-size:11px; color:var(--ink-faint); display:block; margin-bottom:2px; }
+  .edit-form input, .edit-form textarea, select, .modal input, .modal textarea{
+    width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 9px; font-family:inherit; font-size:13px; background:var(--paper-2); color:var(--ink);
+  }
+  .edit-form .full{ grid-column:1/-1; }
+  .save-row{ grid-column:1/-1; display:flex; gap:8px; margin-top:2px; }
+  .save-row button{ flex:1; border:none; border-radius:8px; padding:9px; font-size:13px; cursor:pointer; font-family:inherit; }
+  .save-row .primary{ background:var(--teal); color:#fff; }
+  .save-row .ghost{ background:var(--paper-2); border:1px solid var(--line); color:var(--ink-soft); }
+  .merge-bar{ position:sticky; bottom:78px; background:var(--ink); color:var(--paper); border-radius:12px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:10px; }
+  .merge-bar button{ background:var(--teal); color:#fff; border:none; border-radius:7px; padding:6px 12px; font-size:12px; cursor:pointer; }
+
+  /* settings */
+  .set-row{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
+  .set-row label{ font-size:13px; font-weight:500; display:block; margin-bottom:6px; }
+  .set-row .hint{ font-size:11px; color:var(--ink-faint); margin-top:5px; }
+  .seg{ display:flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; }
+  .seg button{ flex:1; border:none; background:var(--paper-2); padding:8px; font-size:13px; cursor:pointer; color:var(--ink-soft); font-family:inherit; border-right:1px solid var(--line); }
+  .seg button:last-child{ border-right:none; }
+  .seg button.active{ background:var(--teal); color:#fff; }
+  .file-row{ display:flex; gap:8px; }
+  .file-row button{ flex:1; border:1px solid var(--line); background:var(--paper-2); border-radius:9px; padding:10px; font-size:13px; cursor:pointer; color:var(--ink); font-family:inherit; }
+
+  /* nav */
+  nav{ position:fixed; bottom:0; left:0; right:0; background:var(--paper); border-top:1px solid var(--line); display:flex; max-width:480px; margin:0 auto; }
+  nav button{ flex:1; border:none; background:transparent; padding:11px 0 9px; font-size:10px; color:var(--ink-faint); cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  nav button .icon{ font-size:19px; }
+  nav button.active{ color:var(--teal); }
+
+  /* modal */
+  .modal-overlay{ position:fixed; inset:0; background:rgba(20,24,22,0.4); display:none; align-items:flex-end; justify-content:center; z-index:50; }
+  .modal-overlay.open{ display:flex; }
+  .modal{ background:var(--paper); width:100%; max-width:480px; border-radius:20px 20px 0 0; padding:20px 20px 26px; max-height:82vh; overflow-y:auto; }
+  .modal h3{ margin:0 0 14px; font-size:16px; }
+  .modal .field{ margin-bottom:12px; }
+  .modal .field label{ font-size:12px; color:var(--ink-soft); display:block; margin-bottom:4px; }
+  .tag-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .tag{ font-size:12px; border:1px solid var(--line); border-radius:20px; padding:5px 11px; cursor:pointer; background:var(--paper-2); color:var(--ink-soft); }
+  .tag.active{ background:var(--teal); color:#fff; border-color:var(--teal); }
+  .modal-actions{ display:flex; gap:10px; margin-top:16px; }
+  .modal-actions button{ flex:1; border:none; border-radius:10px; padding:12px; font-size:14px; cursor:pointer; font-family:inherit; }
+  .modal-actions .primary{ background:var(--teal); color:#fff; }
+  .modal-actions .ghost{ background:var(--paper-2); border:1px solid var(--line); color:var(--ink-soft); }
+
+  .empty-note{ text-align:center; color:var(--ink-faint); font-size:13px; padding:30px 0; }
+  .toast{ position:fixed; bottom:96px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); font-size:13px; padding:9px 16px; border-radius:10px; opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:60; }
+  .toast.show{ opacity:1; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <h1 id="topLabel">Служение</h1>
+    <div class="date" id="topDate">—</div>
+  </div>
+
+  <main>
+    <!-- MAIN VIEW -->
+    <section class="view active" id="view-main">
+      <div class="timer-card">
+        <div class="timer-ring-wrap">
+          <svg viewBox="0 0 230 230">
+            <circle class="ring-track" cx="115" cy="115" r="104"></circle>
+            <circle class="ring-progress" id="ringProgress" cx="115" cy="115" r="104"></circle>
+          </svg>
+          <div class="timer-center">
+            <div class="timer-digits" id="timerDigits">00:00:00</div>
+            <div class="timer-label" id="timerState">Служение не начато</div>
+          </div>
+        </div>
+        <div class="timer-meta">
+          <div>Начало<b id="metaStart">—</b></div>
+          <div>Окончание<b id="metaEnd">—</b></div>
+        </div>
+        <button class="big-btn start" id="mainBtn">▶ Начать служение</button>
+        <button class="note-btn" id="addNoteBtn">+ Добавить заметку</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card"><div class="label">Сегодня</div><div class="value" id="statToday">0 ч 0 мин</div></div>
+        <div class="stat-card"><div class="label">Этот месяц</div><div class="value" id="statMonth">0 ч 0 мин</div></div>
+        <div class="stat-card"><div class="label">Прошлый месяц</div><div class="value" id="statLastMonth">0 ч 0 мин</div></div>
+      </div>
+
+      <div class="goal-card">
+        <div class="goal-top"><span>Цель на месяц</span><b id="goalText">0 / 30 ч</b></div>
+        <div class="goal-bar"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
+      </div>
+    </section>
+
+    <!-- CALENDAR VIEW -->
+    <section class="view" id="view-calendar">
+      <div class="cal-nav">
+        <button id="calPrev">‹</button>
+        <div class="month-label" id="calMonthLabel">—</div>
+        <button id="calNext">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div id="dayDetail"></div>
+    </section>
+
+    <!-- HISTORY VIEW -->
+    <section class="view" id="view-history">
+      <div class="section-title">Все записи</div>
+      <div id="mergeBar"></div>
+      <div id="historyList"></div>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section class="view" id="view-settings">
+      <div class="set-row">
+        <label>Цель на месяц (часы)</label>
+        <input type="number" id="setGoal" min="1" step="1">
+      </div>
+      <div class="set-row">
+        <label>Тема</label>
+        <div class="seg" id="segTheme">
+          <button data-v="light">Светлая</button>
+          <button data-v="dark">Тёмная</button>
+          <button data-v="auto">Авто</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <label>Формат времени</label>
+        <div class="seg" id="segFormat">
+          <button data-v="24">24 ч</button>
+          <button data-v="12">12 ч (AM/PM)</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <label>Данные</label>
+        <div class="file-row">
+          <button id="btnExportCsv">Экспорт CSV</button>
+          <button id="btnBackup">Резервная копия</button>
+        </div>
+        <div class="file-row" style="margin-top:8px;">
+          <button id="btnImportTrigger">Восстановить из копии</button>
+        </div>
+        <input type="file" id="fileImport" accept="application/json" style="display:none">
+        <div class="hint">Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.</div>
+      </div>
+    </section>
+  </main>
+
+  <nav>
+    <button class="nav-btn active" data-view="main"><span class="icon">●</span>Главная</button>
+    <button class="nav-btn" data-view="calendar"><span class="icon">▦</span>Календарь</button>
+    <button class="nav-btn" data-view="history"><span class="icon">≡</span>История</button>
+    <button class="nav-btn" data-view="settings"><span class="icon">⚙</span>Настройки</button>
+  </nav>
+</div>
+
+<div class="modal-overlay" id="noteOverlay">
+  <div class="modal">
+    <h3 id="noteModalTitle">Заметка о служении</h3>
+    <div class="field">
+      <label>Территория</label>
+      <input type="text" id="noteTerritory" placeholder="Например: Центр, участок 5">
+    </div>
+    <div class="field">
+      <label>Напарник</label>
+      <input type="text" id="notePartner" placeholder="Имя напарника">
+    </div>
+    <div class="field">
+      <label>Теги</label>
+      <div class="tag-row" id="tagRow"></div>
+    </div>
+    <div class="field">
+      <label>Комментарий</label>
+      <textarea id="noteComment" rows="2" placeholder="Любые заметки"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="noteCancel">Отмена</button>
+      <button class="primary" id="noteSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var TAGS = ["Первое посещение","Повторное посещение","Изучение","Неформальное свидетельство"];
+  var state = {
+    sessions: [],
+    settings: { goalHours: 30, theme: "auto", timeFormat: 24, weekStart: 1 },
+    view: "main",
+    calMonth: new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0"),
+    selectedDay: null,
+    editingNoteFor: null,
+    activeTags: [],
+    tickHandle: null,
+    selectedForMerge: []
+  };
+
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function pad(n){ return String(n).padStart(2,"0"); }
+  function toast(msg){
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("show");
+    setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  // ---------- storage (browser localStorage — persists on this device/browser) ----------
+  async function loadState(){
+    try{
+      var s = localStorage.getItem("ministry-sessions");
+      state.sessions = s ? JSON.parse(s) : [];
+    }catch(e){ state.sessions = []; }
+    try{
+      var st = localStorage.getItem("ministry-settings");
+      if(st) state.settings = Object.assign(state.settings, JSON.parse(st));
+    }catch(e){}
+    applyTheme();
+  }
+  async function saveSessions(){
+    try{ localStorage.setItem("ministry-sessions", JSON.stringify(state.sessions)); }
+    catch(e){ toast("Не удалось сохранить данные"); }
+  }
+  async function saveSettings(){
+    try{ localStorage.setItem("ministry-settings", JSON.stringify(state.settings)); }
+    catch(e){ toast("Не удалось сохранить настройки"); }
+  }
+
+  // ---------- date helpers ----------
+  function fmtTime(iso){
+    var d = new Date(iso);
+    var h = d.getHours(), m = d.getMinutes();
+    if(state.settings.timeFormat == 12){
+      var ap = h>=12 ? "PM":"AM"; var hh = h%12; if(hh===0) hh=12;
+      return hh+":"+pad(m)+" "+ap;
+    }
+    return pad(h)+":"+pad(m);
+  }
+  function dateKey(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+  function todayKey(){ return dateKey(new Date()); }
+  function durationMs(s){ var end = s.end ? new Date(s.end) : new Date(); return end - new Date(s.start); }
+  function fmtDurationShort(ms){
+    var totalMin = Math.round(ms/60000);
+    var h = Math.floor(totalMin/60), m = totalMin%60;
+    return h+" ч "+m+" мин";
+  }
+  function fmtHM(ms){
+    var s = Math.floor(ms/1000);
+    var h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
+    return pad(h)+":"+pad(m)+":"+pad(sec);
+  }
+  function monthKeyOf(dateStr){ return dateStr.slice(0,7); }
+
+  function activeSession(){
+    for(var i=state.sessions.length-1;i>=0;i--){ if(!state.sessions[i].end) return state.sessions[i]; }
+    return null;
+  }
+
+  // ---------- theme ----------
+  function applyTheme(){
+    var t = state.settings.theme;
+    var effective = t;
+    if(t === "auto"){ effective = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light"; }
+    document.documentElement.setAttribute("data-theme", effective);
+  }
+
+  // ---------- navigation ----------
+  function setView(v){
+    state.view = v;
+    document.querySelectorAll(".view").forEach(function(el){ el.classList.remove("active"); });
+    document.getElementById("view-"+v).classList.add("active");
+    document.querySelectorAll(".nav-btn").forEach(function(b){ b.classList.toggle("active", b.dataset.view===v); });
+    var labels = {main:["Служение", new Date().toLocaleDateString("ru-RU",{day:"numeric",month:"long"})], calendar:["Календарь","Обзор по дням"], history:["История","Все записи"], settings:["Настройки","Приложение"]};
+    document.getElementById("topLabel").textContent = labels[v][0];
+    document.getElementById("topDate").textContent = labels[v][1];
+    if(v==="calendar") renderCalendar();
+    if(v==="history") renderHistory();
+    if(v==="settings") renderSettings();
+  }
+
+  // ---------- timer rendering ----------
+  var RING_CIRC = 2*Math.PI*104;
+  function renderTimer(){
+    var act = activeSession();
+    var btn = document.getElementById("mainBtn");
+    var ring = document.getElementById("ringProgress");
+    if(act){
+      btn.textContent = "⏹ Закончить служение";
+      btn.className = "big-btn stop";
+      document.getElementById("timerState").textContent = "Служение идёт";
+      document.getElementById("metaStart").textContent = fmtTime(act.start);
+      document.getElementById("metaEnd").textContent = "—";
+      var ms = durationMs(act);
+      document.getElementById("timerDigits").textContent = fmtHM(ms);
+      var frac = (Math.floor(ms/1000) % 3600) / 3600;
+      ring.style.strokeDashoffset = RING_CIRC*(1-frac);
+      ring.style.opacity = 1;
+    } else {
+      btn.textContent = "▶ Начать служение";
+      btn.className = "big-btn start";
+      document.getElementById("timerState").textContent = "Служение не начато";
+      var last = state.sessions.length ? state.sessions[state.sessions.length-1] : null;
+      if(last && last.end && dateKey(new Date(last.start))===todayKey()){
+        document.getElementById("metaStart").textContent = fmtTime(last.start);
+        document.getElementById("metaEnd").textContent = fmtTime(last.end);
+      } else {
+        document.getElementById("metaStart").textContent = "—";
+        document.getElementById("metaEnd").textContent = "—";
+      }
+      document.getElementById("timerDigits").textContent = "00:00:00";
+      ring.style.opacity = 0.25;
+      ring.style.strokeDashoffset = RING_CIRC;
+    }
+    renderStats();
+  }
+
+  function renderStats(){
+    var now = new Date();
+    var tKey = todayKey();
+    var curMonth = tKey.slice(0,7);
+    var d = new Date(now.getFullYear(), now.getMonth()-1, 1);
+    var lastMonth = d.getFullYear()+"-"+pad(d.getMonth()+1);
+
+    var sumToday=0, sumMonth=0, sumLastMonth=0;
+    state.sessions.forEach(function(s){
+      if(s.excluded) return;
+      var ms = durationMs(s);
+      var dk = dateKey(new Date(s.start));
+      if(dk === tKey) sumToday += ms;
+      if(dk.slice(0,7) === curMonth) sumMonth += ms;
+      if(dk.slice(0,7) === lastMonth) sumLastMonth += ms;
+    });
+    document.getElementById("statToday").textContent = fmtDurationShort(sumToday);
+    document.getElementById("statMonth").textContent = fmtDurationShort(sumMonth);
+    document.getElementById("statLastMonth").textContent = fmtDurationShort(sumLastMonth);
+
+    var goalMs = state.settings.goalHours*3600000;
+    var pct = goalMs>0 ? Math.min(100, Math.round(sumMonth/goalMs*100)) : 0;
+    document.getElementById("goalText").textContent = (sumMonth/3600000).toFixed(1)+" / "+state.settings.goalHours+" ч";
+    var fill = document.getElementById("goalFill");
+    fill.style.width = pct+"%";
+    fill.classList.toggle("over", sumMonth >= goalMs);
+  }
+
+  function startTicking(){
+    if(state.tickHandle) clearInterval(state.tickHandle);
+    state.tickHandle = setInterval(function(){ if(activeSession()) renderTimer(); }, 1000);
+  }
+
+  // ---------- actions ----------
+  async function toggleTimer(){
+    var act = activeSession();
+    if(!act){
+      state.sessions.push({ id: uid(), start: new Date().toISOString(), end: null, note: {territory:"",partner:"",comment:"",tags:[]}, excluded:false });
+      await saveSessions();
+      renderTimer();
+      toast("Служение начато");
+    } else {
+      act.end = new Date().toISOString();
+      await saveSessions();
+      renderTimer();
+      toast("Служение завершено — "+fmtDurationShort(durationMs(act)));
+      openNoteModal(act.id, true);
+    }
+  }
+
+  function openNoteModal(sessionId, afterStop){
+    var s = state.sessions.find(function(x){ return x.id===sessionId; });
+    if(!s) return;
+    state.editingNoteFor = sessionId;
+    document.getElementById("noteModalTitle").textContent = afterStop ? "Заметка о завершённом служении" : "Заметка о служении";
+    document.getElementById("noteTerritory").value = s.note.territory||"";
+    document.getElementById("notePartner").value = s.note.partner||"";
+    document.getElementById("noteComment").value = s.note.comment||"";
+    state.activeTags = (s.note.tags||[]).slice();
+    renderTags();
+    document.getElementById("noteOverlay").classList.add("open");
+  }
+  function renderTags(){
+    var row = document.getElementById("tagRow");
+    row.innerHTML = "";
+    TAGS.forEach(function(tag){
+      var el = document.createElement("div");
+      el.className = "tag"+(state.activeTags.indexOf(tag)>=0?" active":"");
+      el.textContent = tag;
+      el.onclick = function(){
+        var i = state.activeTags.indexOf(tag);
+        if(i>=0) state.activeTags.splice(i,1); else state.activeTags.push(tag);
+        renderTags();
+      };
+      row.appendChild(el);
+    });
+  }
+  async function saveNote(){
+    var s = state.sessions.find(function(x){ return x.id===state.editingNoteFor; });
+    if(s){
+      s.note = {
+        territory: document.getElementById("noteTerritory").value.trim(),
+        partner: document.getElementById("notePartner").value.trim(),
+        comment: document.getElementById("noteComment").value.trim(),
+        tags: state.activeTags.slice()
+      };
+      await saveSessions();
+      toast("Заметка сохранена");
+      renderHistory();
+    }
+    closeNoteModal();
+  }
+  function closeNoteModal(){
+    document.getElementById("noteOverlay").classList.remove("open");
+    state.editingNoteFor = null;
+  }
+
+  // ---------- calendar ----------
+  function shiftMonth(delta){
+    var parts = state.calMonth.split("-").map(Number);
+    var d = new Date(parts[0], parts[1]-1+delta, 1);
+    state.calMonth = d.getFullYear()+"-"+pad(d.getMonth()+1);
+    state.selectedDay = null;
+    renderCalendar();
+  }
+  function renderCalendar(){
+    var parts = state.calMonth.split("-").map(Number);
+    var year = parts[0], month = parts[1]-1;
+    var monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+    document.getElementById("calMonthLabel").textContent = monthNames[month]+" "+year;
+
+    var byDay = {};
+    state.sessions.forEach(function(s){
+      if(s.excluded) return;
+      var dk = dateKey(new Date(s.start));
+      if(dk.slice(0,7) !== state.calMonth) return;
+      byDay[dk] = (byDay[dk]||0) + durationMs(s);
+    });
+
+    var grid = document.getElementById("calGrid");
+    grid.innerHTML = "";
+    ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].forEach(function(d){
+      var el = document.createElement("div"); el.className="cal-dow"; el.textContent=d; grid.appendChild(el);
+    });
+    var firstDow = (new Date(year, month, 1).getDay()+6)%7; // Monday=0
+    for(var i=0;i<firstDow;i++){ var e=document.createElement("div"); e.className="cal-day empty"; grid.appendChild(e); }
+    var daysInMonth = new Date(year, month+1, 0).getDate();
+    var tKey = todayKey();
+    for(var day=1; day<=daysInMonth; day++){
+      var dk = year+"-"+pad(month+1)+"-"+pad(day);
+      var cell = document.createElement("div");
+      cell.className = "cal-day"+(byDay[dk]?" has-time":"")+(dk===tKey?" today":"")+(dk===state.selectedDay?" selected":"");
+      cell.innerHTML = "<div class='d'>"+day+"</div>"+(byDay[dk]?"<div class='t'>"+fmtDurationShort(byDay[dk])+"</div>":"");
+      cell.onclick = function(dkClosure){ return function(){ state.selectedDay = (state.selectedDay===dkClosure)?null:dkClosure; renderCalendar(); }; }(dk);
+      grid.appendChild(cell);
+    }
+    renderDayDetail();
+  }
+  function renderDayDetail(){
+    var box = document.getElementById("dayDetail");
+    if(!state.selectedDay){ box.innerHTML = ""; return; }
+    var list = state.sessions.filter(function(s){ return dateKey(new Date(s.start)) === state.selectedDay; });
+    var dparts = state.selectedDay.split("-");
+    var label = dparts[2]+"."+dparts[1]+"."+dparts[0];
+    var html = "<div class='day-detail'><h4>"+label+"</h4>";
+    if(!list.length){ html += "<div class='empty-note'>Нет записей за этот день</div>"; }
+    list.forEach(function(s){
+      html += "<div class='entry'><span>"+fmtTime(s.start)+"–"+(s.end?fmtTime(s.end):"...")+"</span><span>"+fmtDurationShort(durationMs(s))+"</span></div>";
+    });
+    html += "</div>";
+    box.innerHTML = html;
+  }
+
+  // ---------- history ----------
+  function renderHistory(){
+    var list = document.getElementById("historyList");
+    var sorted = state.sessions.slice().sort(function(a,b){ return new Date(b.start)-new Date(a.start); });
+    if(!sorted.length){ list.innerHTML = "<div class='empty-note'>Записей пока нет</div>"; renderMergeBar(); return; }
+    list.innerHTML = "";
+    sorted.forEach(function(s){
+      var row = document.createElement("div");
+      row.className = "hist-row";
+      var d = new Date(s.start);
+      var dateLabel = pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear();
+      var noteBits = [];
+      if(s.note){
+        if(s.note.territory) noteBits.push(s.note.territory);
+        if(s.note.partner) noteBits.push("с "+s.note.partner);
+        if(s.note.tags && s.note.tags.length) noteBits.push(s.note.tags.join(", "));
+        if(s.note.comment) noteBits.push(s.note.comment);
+      }
+      row.innerHTML =
+        "<label class='chk-wrap' style='float:right;'><input type='checkbox' data-merge='"+s.id+"' style='margin-right:4px;'>выбрать</label>"+
+        "<div class='hist-top'><div class='when'><b>"+dateLabel+"</b> · "+fmtTime(s.start)+"–"+(s.end?fmtTime(s.end):"…")+"</div><div class='dur'>"+fmtDurationShort(durationMs(s))+"</div></div>"+
+        (noteBits.length?"<div class='hist-note'>"+noteBits.join(" · ")+"</div>":"")+
+        (s.excluded?"<div class='hist-note' style='color:var(--amber)'>Не учитывается в итоге месяца</div>":"")+
+        "<div class='hist-actions'>"+
+          "<button data-act='edit' data-id='"+s.id+"'>Изменить</button>"+
+          "<button data-act='note' data-id='"+s.id+"'>Заметка</button>"+
+          "<button data-act='exclude' data-id='"+s.id+"'>"+(s.excluded?"Учитывать":"Не учитывать")+"</button>"+
+          "<button data-act='split' data-id='"+s.id+"'>Разделить</button>"+
+          "<button class='danger' data-act='delete' data-id='"+s.id+"'>Удалить</button>"+
+        "</div>"+
+        "<div class='edit-slot'></div>";
+      list.appendChild(row);
+    });
+    renderMergeBar();
+  }
+  function renderMergeBar(){
+    var bar = document.getElementById("mergeBar");
+    var checked = Array.prototype.slice.call(document.querySelectorAll("[data-merge]:checked")).map(function(c){ return c.dataset.merge; });
+    if(checked.length===2){
+      bar.innerHTML = "<div class='merge-bar'><span>Выбрано записей: 2</span><button id='doMerge'>Объединить</button></div>";
+      document.getElementById("doMerge").onclick = function(){ mergeSessions(checked[0], checked[1]); };
+    } else {
+      bar.innerHTML = "";
+    }
+  }
+  async function mergeSessions(id1, id2){
+    var a = state.sessions.find(function(s){ return s.id===id1; });
+    var b = state.sessions.find(function(s){ return s.id===id2; });
+    if(!a||!b) return;
+    var starts = [new Date(a.start), new Date(b.start)];
+    var ends = [a.end?new Date(a.end):new Date(), b.end?new Date(b.end):new Date()];
+    var newStart = starts[0] < starts[1] ? a.start : b.start;
+    var newEnd = ends[0] > ends[1] ? (a.end||b.end) : (b.end||a.end);
+    var mergedNote = {
+      territory: a.note.territory || b.note.territory || "",
+      partner: a.note.partner || b.note.partner || "",
+      comment: [a.note.comment, b.note.comment].filter(Boolean).join(" / "),
+      tags: Array.from(new Set((a.note.tags||[]).concat(b.note.tags||[])))
+    };
+    state.sessions = state.sessions.filter(function(s){ return s.id!==id1 && s.id!==id2; });
+    state.sessions.push({ id: uid(), start:newStart, end:newEnd, note:mergedNote, excluded:false });
+    await saveSessions();
+    toast("Записи объединены");
+    renderHistory();
+  }
+  async function splitSession(id){
+    var s = state.sessions.find(function(x){ return x.id===id; });
+    if(!s || !s.end) { toast("Нельзя разделить незавершённую запись"); return; }
+    var mid = new Date((new Date(s.start).getTime() + new Date(s.end).getTime())/2);
+    var second = { id: uid(), start: mid.toISOString(), end: s.end, note: Object.assign({},s.note), excluded: s.excluded };
+    s.end = mid.toISOString();
+    state.sessions.push(second);
+    await saveSessions();
+    toast("Запись разделена пополам — время можно поправить вручную");
+    renderHistory();
+  }
+  function openEdit(id){
+    var row = document.querySelector("[data-act='edit'][data-id='"+id+"']").closest(".hist-row");
+    var slot = row.querySelector(".edit-slot");
+    var s = state.sessions.find(function(x){ return x.id===id; });
+    var sd = new Date(s.start), ed = s.end ? new Date(s.end) : null;
+    slot.innerHTML =
+      "<div class='edit-form'>"+
+      "<div><label>Дата</label><input type='date' id='ef-date' value='"+dateKey(sd)+"'></div>"+
+      "<div><label>Начало</label><input type='time' id='ef-start' value='"+pad(sd.getHours())+":"+pad(sd.getMinutes())+"'></div>"+
+      "<div><label>Окончание</label><input type='time' id='ef-end' value='"+(ed?pad(ed.getHours())+":"+pad(ed.getMinutes()):"")+"'></div>"+
+      "<div class='save-row'><button class='primary' id='ef-save'>Сохранить</button><button class='ghost' id='ef-cancel'>Отмена</button></div>"+
+      "</div>";
+    document.getElementById("ef-save").onclick = async function(){
+      var dateVal = document.getElementById("ef-date").value;
+      var startVal = document.getElementById("ef-start").value;
+      var endVal = document.getElementById("ef-end").value;
+      if(!dateVal || !startVal){ toast("Укажите дату и время начала"); return; }
+      var newStart = new Date(dateVal+"T"+startVal+":00");
+      s.start = newStart.toISOString();
+      if(endVal){
+        var newEnd = new Date(dateVal+"T"+endVal+":00");
+        if(newEnd < newStart) newEnd.setDate(newEnd.getDate()+1);
+        s.end = newEnd.toISOString();
+      }
+      await saveSessions();
+      toast("Изменения сохранены");
+      renderHistory();
+    };
+    document.getElementById("ef-cancel").onclick = function(){ slot.innerHTML = ""; };
+  }
+
+  document.getElementById("historyList").addEventListener("click", function(ev){
+    var t = ev.target;
+    if(t.dataset.act === "edit") openEdit(t.dataset.id);
+    if(t.dataset.act === "note") openNoteModal(t.dataset.id, false);
+    if(t.dataset.act === "split") splitSession(t.dataset.id);
+    if(t.dataset.act === "delete"){
+      if(confirm("Удалить эту запись?")){
+        state.sessions = state.sessions.filter(function(s){ return s.id!==t.dataset.id; });
+        saveSessions(); renderHistory();
+      }
+    }
+    if(t.dataset.act === "exclude"){
+      var s = state.sessions.find(function(x){ return x.id===t.dataset.id; });
+      s.excluded = !s.excluded;
+      saveSessions(); renderHistory();
+    }
+  });
+  document.getElementById("historyList").addEventListener("change", function(ev){
+    if(ev.target.dataset.merge) renderMergeBar();
+  });
+
+  // ---------- settings ----------
+  function renderSettings(){
+    document.getElementById("setGoal").value = state.settings.goalHours;
+    document.querySelectorAll("#segTheme button").forEach(function(b){ b.classList.toggle("active", b.dataset.v===state.settings.theme); });
+    document.querySelectorAll("#segFormat button").forEach(function(b){ b.classList.toggle("active", b.dataset.v==String(state.settings.timeFormat)); });
+  }
+  document.getElementById("setGoal").addEventListener("change", function(e){
+    var v = parseInt(e.target.value,10);
+    state.settings.goalHours = (v>0)?v:30;
+    saveSettings(); renderStats();
+  });
+  document.getElementById("segTheme").addEventListener("click", function(e){
+    if(e.target.tagName!=="BUTTON") return;
+    state.settings.theme = e.target.dataset.v;
+    saveSettings(); applyTheme(); renderSettings();
+  });
+  document.getElementById("segFormat").addEventListener("click", function(e){
+    if(e.target.tagName!=="BUTTON") return;
+    state.settings.timeFormat = parseInt(e.target.dataset.v,10);
+    saveSettings(); renderSettings(); renderTimer();
+  });
+
+  function toCsv(){
+    var rows = [["Дата","Начало","Окончание","Длительность (мин)","Территория","Напарник","Теги","Комментарий","Не учитывается"]];
+    state.sessions.slice().sort(function(a,b){return new Date(a.start)-new Date(b.start);}).forEach(function(s){
+      rows.push([
+        dateKey(new Date(s.start)),
+        fmtTime(s.start),
+        s.end?fmtTime(s.end):"",
+        Math.round(durationMs(s)/60000),
+        s.note.territory||"", s.note.partner||"",
+        (s.note.tags||[]).join("; "), (s.note.comment||"").replace(/\n/g," "),
+        s.excluded?"да":"нет"
+      ]);
+    });
+    return rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(","); }).join("\r\n");
+  }
+  function downloadFile(content, filename, type){
+    var blob = new Blob([content], {type:type});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 500);
+  }
+  document.getElementById("btnExportCsv").onclick = function(){
+    downloadFile("\uFEFF"+toCsv(), "служение_"+todayKey()+".csv", "text/csv;charset=utf-8");
+    toast("CSV сохранён");
+  };
+  document.getElementById("btnBackup").onclick = function(){
+    var payload = JSON.stringify({sessions:state.sessions, settings:state.settings}, null, 2);
+    downloadFile(payload, "backup_служение_"+todayKey()+".json", "application/json");
+    toast("Резервная копия сохранена");
+  };
+  document.getElementById("btnImportTrigger").onclick = function(){ document.getElementById("fileImport").click(); };
+  document.getElementById("fileImport").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = async function(ev){
+      try{
+        var data = JSON.parse(ev.target.result);
+        if(!confirm("Заменить текущие данные содержимым резервной копии?")) return;
+        if(Array.isArray(data.sessions)) state.sessions = data.sessions;
+        if(data.settings) state.settings = Object.assign(state.settings, data.settings);
+        await saveSessions(); await saveSettings();
+        applyTheme(); renderTimer(); renderSettings();
+        toast("Данные восстановлены");
+      }catch(err){ toast("Не удалось прочитать файл"); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  // ---------- wiring ----------
+  document.getElementById("mainBtn").onclick = toggleTimer;
+  document.getElementById("addNoteBtn").onclick = function(){
+    var act = activeSession();
+    var target = act || (state.sessions.length ? state.sessions[state.sessions.length-1] : null);
+    if(!target){ toast("Сначала начните служение"); return; }
+    openNoteModal(target.id, false);
+  };
+  document.getElementById("noteCancel").onclick = closeNoteModal;
+  document.getElementById("noteSave").onclick = saveNote;
+  document.getElementById("calPrev").onclick = function(){ shiftMonth(-1); };
+  document.getElementById("calNext").onclick = function(){ shiftMonth(1); };
+  document.querySelectorAll(".nav-btn").forEach(function(b){ b.onclick = function(){ setView(b.dataset.view); }; });
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function(){ if(state.settings.theme==="auto") applyTheme(); });
+
+  // ---------- init ----------
+  (async function init(){
+    await loadState();
+    renderTimer();
+    startTicking();
+    setView("main");
+  })();
+
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("service-worker.js").catch(function(){});
+    });
+  }
+})();
+</script>
+</body>
+</html>
