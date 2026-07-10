@@ -135,8 +135,9 @@
   .hist-top .when b{ font-weight:600; }
   .hist-top .dur{ font-size:13px; font-weight:600; color:var(--teal); }
   .hist-note{ font-size:12px; color:var(--ink-soft); margin-top:4px; }
-  .hist-actions{ display:flex; gap:6px; margin-top:8px; }
-  .hist-actions button, .chk-wrap{ font-size:12px; border:1px solid var(--line); background:var(--paper-2); border-radius:8px; padding:5px 9px; cursor:pointer; color:var(--ink-soft); font-family:inherit; }
+  .hist-actions{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-top:8px; }
+  .hist-actions button{ font-size:11px; border:1px solid var(--line); background:var(--paper-2); border-radius:8px; padding:7px 2px; cursor:pointer; color:var(--ink-soft); font-family:inherit; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chk-wrap{ font-size:11px; border:1px solid var(--line); background:var(--paper-2); border-radius:8px; padding:5px 9px; cursor:pointer; color:var(--ink-soft); font-family:inherit; }
   .hist-actions button.danger{ color:var(--red); }
   .edit-form{ margin-top:10px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .edit-form label{ font-size:11px; color:var(--ink-faint); display:block; margin-bottom:2px; }
@@ -210,22 +211,22 @@
           </div>
         </div>
         <div class="timer-meta">
-          <div>Начало<b id="metaStart">—</b></div>
-          <div>Окончание<b id="metaEnd">—</b></div>
+          <div><span data-i18n="metaStart">Начало</span><b id="metaStart">—</b></div>
+          <div><span data-i18n="metaEnd">Окончание</span><b id="metaEnd">—</b></div>
         </div>
         <button class="big-btn start" id="mainBtn">▶ Начать служение</button>
-        <button class="note-btn" id="addNoteBtn">+ Добавить заметку</button>
-        <button class="note-btn" id="addManualBtn" style="margin-top:8px;">+ Добавить запись вручную</button>
+        <button class="note-btn" id="addNoteBtn" data-i18n="btnAddNote">+ Добавить заметку</button>
+        <button class="note-btn" id="addManualBtn" data-i18n="btnAddManual" style="margin-top:8px;">+ Добавить запись вручную</button>
       </div>
 
       <div class="stats-grid">
-        <div class="stat-card"><div class="label">Сегодня</div><div class="value" id="statToday">0 ч 0 мин</div></div>
-        <div class="stat-card"><div class="label">Этот месяц</div><div class="value" id="statMonth">0 ч 0 мин</div></div>
-        <div class="stat-card"><div class="label">Прошлый месяц</div><div class="value" id="statLastMonth">0 ч 0 мин</div></div>
+        <div class="stat-card"><div class="label" data-i18n="statToday">Сегодня</div><div class="value" id="statToday">0 ч 0 мин</div></div>
+        <div class="stat-card"><div class="label" data-i18n="statMonth">Этот месяц</div><div class="value" id="statMonth">0 ч 0 мин</div></div>
+        <div class="stat-card"><div class="label" data-i18n="statLastMonth">Прошлый месяц</div><div class="value" id="statLastMonth">0 ч 0 мин</div></div>
       </div>
 
       <div class="goal-card">
-        <div class="goal-top"><span>Цель на месяц</span><b id="goalText">0 / 30 ч</b></div>
+        <div class="goal-top"><span data-i18n="goalLabel">Цель на месяц</span><b id="goalText">0 / 30 ч</b></div>
         <div class="goal-bar"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
       </div>
     </section>
@@ -243,7 +244,7 @@
 
     <!-- HISTORY VIEW -->
     <section class="view" id="view-history">
-      <div class="section-title">Все записи</div>
+      <div class="section-title" data-i18n="sectionAllEntries">Все записи</div>
       <div id="mergeBar"></div>
       <div id="historyList"></div>
     </section>
@@ -251,44 +252,53 @@
     <!-- SETTINGS VIEW -->
     <section class="view" id="view-settings">
       <div class="set-row">
-        <label>Цель на месяц (часы)</label>
+        <label data-i18n="setGoalLabel">Цель на месяц (часы)</label>
         <input type="number" id="setGoal" min="1" step="1">
       </div>
       <div class="set-row">
-        <label>Тема</label>
+        <label data-i18n="setThemeLabel">Тема</label>
         <div class="seg" id="segTheme">
-          <button data-v="light">Светлая</button>
-          <button data-v="dark">Тёмная</button>
-          <button data-v="auto">Авто</button>
+          <button data-v="light" data-i18n="themeLight">Светлая</button>
+          <button data-v="dark" data-i18n="themeDark">Тёмная</button>
+          <button data-v="auto" data-i18n="themeAuto">Авто</button>
         </div>
       </div>
       <div class="set-row">
-        <label>Формат времени</label>
+        <label data-i18n="setFormatLabel">Формат времени</label>
         <div class="seg" id="segFormat">
-          <button data-v="24">24 ч</button>
-          <button data-v="12">12 ч (AM/PM)</button>
+          <button data-v="24" data-i18n="format24">24 ч</button>
+          <button data-v="12" data-i18n="format12">12 ч (AM/PM)</button>
         </div>
       </div>
       <div class="set-row">
-        <label>Данные</label>
+        <label data-i18n="setLangLabel">Язык</label>
+        <select id="setLang">
+          <option value="ru">Русский</option>
+          <option value="uk">Українська</option>
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+      <div class="set-row">
+        <label data-i18n="setDataLabel">Данные</label>
         <div class="file-row">
-          <button id="btnExportCsv">Экспорт CSV</button>
-          <button id="btnBackup">Резервная копия</button>
+          <button id="btnExportCsv" data-i18n="btnExportCsv">Экспорт CSV</button>
+          <button id="btnBackup" data-i18n="btnBackup">Резервная копия</button>
         </div>
         <div class="file-row" style="margin-top:8px;">
-          <button id="btnImportTrigger">Восстановить из копии</button>
+          <button id="btnImportTrigger" data-i18n="btnImportTrigger">Восстановить из копии</button>
         </div>
         <input type="file" id="fileImport" accept="application/json" style="display:none">
-        <div class="hint">Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.</div>
+        <div class="hint" data-i18n="backupHint">Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.</div>
       </div>
     </section>
   </main>
 
   <nav>
-    <button class="nav-btn active" data-view="main"><span class="icon">●</span>Главная</button>
-    <button class="nav-btn" data-view="calendar"><span class="icon">▦</span>Календарь</button>
-    <button class="nav-btn" data-view="history"><span class="icon">≡</span>История</button>
-    <button class="nav-btn" data-view="settings"><span class="icon">⚙</span>Настройки</button>
+    <button class="nav-btn active" data-view="main"><span class="icon">●</span><span data-i18n="navMain">Главная</span></button>
+    <button class="nav-btn" data-view="calendar"><span class="icon">▦</span><span data-i18n="navCalendar">Календарь</span></button>
+    <button class="nav-btn" data-view="history"><span class="icon">≡</span><span data-i18n="navHistory">История</span></button>
+    <button class="nav-btn" data-view="settings"><span class="icon">⚙</span><span data-i18n="navSettings">Настройки</span></button>
   </nav>
 </div>
 
@@ -296,58 +306,72 @@
   <div class="modal">
     <h3 id="noteModalTitle">Заметка о служении</h3>
     <div class="field">
-      <label>Территория</label>
-      <input type="text" id="noteTerritory" placeholder="Например: Центр, участок 5">
+      <label data-i18n="fieldTerritory">Территория</label>
+      <input type="text" id="noteTerritory" data-i18n-placeholder="placeholderTerritory" placeholder="Например: Центр, участок 5">
     </div>
     <div class="field">
-      <label>Напарник</label>
-      <input type="text" id="notePartner" placeholder="Имя напарника">
+      <label data-i18n="fieldPartner">Напарник</label>
+      <input type="text" id="notePartner" data-i18n-placeholder="placeholderPartner" placeholder="Имя напарника">
     </div>
     <div class="field">
-      <label>Теги</label>
+      <label data-i18n="fieldTags">Теги</label>
       <div class="tag-row" id="tagRow"></div>
     </div>
     <div class="field">
-      <label>Комментарий</label>
-      <textarea id="noteComment" rows="2" placeholder="Любые заметки"></textarea>
+      <label data-i18n="fieldComment">Комментарий</label>
+      <textarea id="noteComment" rows="2" data-i18n-placeholder="placeholderComment" placeholder="Любые заметки"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="ghost" id="noteCancel">Отмена</button>
-      <button class="primary" id="noteSave">Сохранить</button>
+      <button class="ghost" id="noteCancel" data-i18n="btnCancel">Отмена</button>
+      <button class="primary" id="noteSave" data-i18n="btnSave">Сохранить</button>
     </div>
   </div>
 </div>
 
 <div class="modal-overlay" id="manualOverlay">
   <div class="modal">
-    <h3>Запись вручную</h3>
+    <h3 data-i18n="manualModalTitle">Запись вручную</h3>
     <div class="field">
-      <label>Дата</label>
+      <label data-i18n="fieldDate">Дата</label>
       <input type="date" id="manDate">
     </div>
-    <div class="edit-form" style="margin-bottom:12px;">
-      <div><label>Начало</label><input type="time" id="manStart"></div>
-      <div><label>Окончание</label><input type="time" id="manEnd"></div>
+    <div class="field" id="durationField">
+      <label data-i18n="durationLabel">Продолжительность</label>
+      <div class="tag-row" id="durationChips"></div>
+      <div class="edit-form" style="margin-top:8px;">
+        <div><label data-i18n="hoursLabel">Часы</label><input type="number" id="manHours" min="0" max="23" value="0"></div>
+        <div><label data-i18n="minutesLabel">Минуты</label><input type="number" id="manMinutes" min="0" max="59" value="0"></div>
+      </div>
     </div>
     <div class="field">
-      <label>Территория</label>
-      <input type="text" id="manTerritory" placeholder="Например: Центр, участок 5">
+      <label class="chk-wrap" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+        <input type="checkbox" id="manUseExact" style="margin:0;">
+        <span data-i18n="useExactTime">Указать точное время начала/окончания</span>
+      </label>
+    </div>
+    <div class="edit-form" id="exactTimeRow" style="margin-bottom:12px; display:none;">
+      <div><label data-i18n="fieldStart">Начало</label><input type="time" id="manStart"></div>
+      <div><label data-i18n="fieldEnd">Окончание</label><input type="time" id="manEnd"></div>
     </div>
     <div class="field">
-      <label>Напарник</label>
-      <input type="text" id="manPartner" placeholder="Имя напарника">
+      <label data-i18n="fieldTerritory">Территория</label>
+      <input type="text" id="manTerritory" data-i18n-placeholder="placeholderTerritory" placeholder="Например: Центр, участок 5">
     </div>
     <div class="field">
-      <label>Теги</label>
+      <label data-i18n="fieldPartner">Напарник</label>
+      <input type="text" id="manPartner" data-i18n-placeholder="placeholderPartner" placeholder="Имя напарника">
+    </div>
+    <div class="field">
+      <label data-i18n="fieldTags">Теги</label>
       <div class="tag-row" id="manTagRow"></div>
     </div>
     <div class="field">
-      <label>Комментарий</label>
-      <textarea id="manComment" rows="2" placeholder="Любые заметки"></textarea>
+      <label data-i18n="fieldComment">Комментарий</label>
+      <textarea id="manComment" rows="2" data-i18n-placeholder="placeholderComment" placeholder="Любые заметки"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="ghost" id="manCancel">Отмена</button>
-      <button class="primary" id="manSave">Сохранить</button>
+      <button class="ghost" id="manCancel" data-i18n="btnCancel">Отмена</button>
+      <button class="primary" id="manSave" data-i18n="btnSave">Сохранить</button>
     </div>
   </div>
 </div>
@@ -358,10 +382,182 @@
 (function(){
   "use strict";
 
-  var TAGS = ["Первое посещение","Повторное посещение","Изучение","Неформальное свидетельство"];
+  var I18N = {
+    ru: {
+      locale:"ru-RU", durH:" ч ", durM:" мин",
+      months:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"],
+      dow:["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],
+      tags:["Первое посещение","Повторное посещение","Изучение","Неформальное свидетельство"],
+      navMain:"Главная", navCalendar:"Календарь", navHistory:"История", navSettings:"Настройки",
+      topMain:"Служение", topCalendar:"Календарь", topCalendarSub:"Обзор по дням", topHistory:"История", topHistorySub:"Все записи", topSettings:"Настройки", topSettingsSub:"Приложение",
+      timerNotStarted:"Служение не начато", timerRunning:"Служение идёт",
+      metaStart:"Начало", metaEnd:"Окончание",
+      btnStart:"▶ Начать служение", btnStop:"⏹ Закончить служение",
+      btnAddNote:"+ Добавить заметку", btnAddManual:"+ Добавить запись вручную",
+      statToday:"Сегодня", statMonth:"Этот месяц", statLastMonth:"Прошлый месяц",
+      goalLabel:"Цель на месяц", sectionAllEntries:"Все записи",
+      emptyHistory:"Записей пока нет", emptyDayDetail:"Нет записей за этот день",
+      histSelect:"выбрать", actEdit:"Изменить", actNote:"Заметка", actExcludeOn:"Не учитывать", actExcludeOff:"Учитывать", actSplit:"Разделить", actDelete:"Удалить",
+      excludedNote:"Не учитывается в итоге месяца",
+      mergeSelected:"Выбрано записей: 2", mergeBtn:"Объединить",
+      confirmDelete:"Удалить эту запись?", confirmRestoreBackup:"Заменить текущие данные содержимым резервной копии?",
+      setGoalLabel:"Цель на месяц (часы)", setThemeLabel:"Тема", themeLight:"Светлая", themeDark:"Тёмная", themeAuto:"Авто",
+      setFormatLabel:"Формат времени", format24:"24 ч", format12:"12 ч (AM/PM)", setLangLabel:"Язык",
+      setDataLabel:"Данные", btnExportCsv:"Экспорт CSV", btnBackup:"Резервная копия", btnImportTrigger:"Восстановить из копии",
+      backupHint:"Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.",
+      noteModalTitleNew:"Заметка о служении", noteModalTitleAfterStop:"Заметка о завершённом служении",
+      manualModalTitle:"Запись вручную",
+      fieldTerritory:"Территория", fieldPartner:"Напарник", fieldTags:"Теги", fieldComment:"Комментарий",
+      fieldDate:"Дата", fieldStart:"Начало", fieldEnd:"Окончание", withPrefix:"с ",
+      durationLabel:"Продолжительность", hoursLabel:"Часы", minutesLabel:"Минуты", useExactTime:"Указать точное время начала/окончания",
+      toastNeedDuration:"Укажите длительность больше нуля",
+      placeholderTerritory:"Например: Центр, участок 5", placeholderPartner:"Имя напарника", placeholderComment:"Любые заметки",
+      btnCancel:"Отмена", btnSave:"Сохранить",
+      toastServiceStarted:"Служение начато", toastServiceEnded:"Служение завершено — ",
+      toastNoteSaved:"Заметка сохранена", toastManualAdded:"Запись добавлена — ",
+      toastMerged:"Записи объединены", toastCannotSplit:"Нельзя разделить незавершённую запись",
+      toastSplit:"Запись разделена пополам — время можно поправить вручную", toastEditSaved:"Изменения сохранены",
+      toastNeedDateStart:"Укажите дату и время начала", toastNeedManualFields:"Укажите дату, начало и окончание",
+      toastStartFirst:"Сначала начните служение",
+      toastSaveDataFail:"Не удалось сохранить данные", toastSaveSettingsFail:"Не удалось сохранить настройки",
+      toastCsvSaved:"CSV сохранён", toastBackupSaved:"Резервная копия сохранена",
+      toastRestored:"Данные восстановлены", toastImportFail:"Не удалось прочитать файл",
+      csv:["Дата","Начало","Окончание","Длительность (мин)","Территория","Напарник","Теги","Комментарий","Не учитывается"],
+      csvYes:"да", csvNo:"нет"
+    },
+    uk: {
+      locale:"uk-UA", durH:" год ", durM:" хв",
+      months:["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"],
+      dow:["Пн","Вт","Ср","Чт","Пт","Сб","Нд"],
+      tags:["Перше відвідування","Повторне відвідування","Вивчення","Неформальне свідчення"],
+      navMain:"Головна", navCalendar:"Календар", navHistory:"Історія", navSettings:"Налаштування",
+      topMain:"Служіння", topCalendar:"Календар", topCalendarSub:"Огляд по днях", topHistory:"Історія", topHistorySub:"Усі записи", topSettings:"Налаштування", topSettingsSub:"Додаток",
+      timerNotStarted:"Служіння не розпочато", timerRunning:"Служіння триває",
+      metaStart:"Початок", metaEnd:"Закінчення",
+      btnStart:"▶ Почати служіння", btnStop:"⏹ Закінчити служіння",
+      btnAddNote:"+ Додати нотатку", btnAddManual:"+ Додати запис вручну",
+      statToday:"Сьогодні", statMonth:"Цей місяць", statLastMonth:"Минулий місяць",
+      goalLabel:"Ціль на місяць", sectionAllEntries:"Усі записи",
+      emptyHistory:"Записів поки немає", emptyDayDetail:"Немає записів за цей день",
+      histSelect:"вибрати", actEdit:"Змінити", actNote:"Нотатка", actExcludeOn:"Не враховувати", actExcludeOff:"Враховувати", actSplit:"Розділити", actDelete:"Видалити",
+      excludedNote:"Не враховується в підсумку місяця",
+      mergeSelected:"Обрано записів: 2", mergeBtn:"Об'єднати",
+      confirmDelete:"Видалити цей запис?", confirmRestoreBackup:"Замінити поточні дані вмістом резервної копії?",
+      setGoalLabel:"Ціль на місяць (години)", setThemeLabel:"Тема", themeLight:"Світла", themeDark:"Темна", themeAuto:"Авто",
+      setFormatLabel:"Формат часу", format24:"24 год", format12:"12 год (AM/PM)", setLangLabel:"Мова",
+      setDataLabel:"Дані", btnExportCsv:"Експорт CSV", btnBackup:"Резервна копія", btnImportTrigger:"Відновити з копії",
+      backupHint:"Резервна копія зберігає всі записи та налаштування у файл JSON, який можна відновити пізніше на будь-якому пристрої.",
+      noteModalTitleNew:"Нотатка про служіння", noteModalTitleAfterStop:"Нотатка про завершене служіння",
+      manualModalTitle:"Запис вручну",
+      fieldTerritory:"Територія", fieldPartner:"Напарник", fieldTags:"Теги", fieldComment:"Коментар",
+      fieldDate:"Дата", fieldStart:"Початок", fieldEnd:"Закінчення", withPrefix:"з ",
+      durationLabel:"Тривалість", hoursLabel:"Години", minutesLabel:"Хвилини", useExactTime:"Вказати точний час початку/закінчення",
+      toastNeedDuration:"Вкажіть тривалість більше нуля",
+      placeholderTerritory:"Наприклад: Центр, дільниця 5", placeholderPartner:"Ім'я напарника", placeholderComment:"Будь-які нотатки",
+      btnCancel:"Скасувати", btnSave:"Зберегти",
+      toastServiceStarted:"Служіння розпочато", toastServiceEnded:"Служіння завершено — ",
+      toastNoteSaved:"Нотатку збережено", toastManualAdded:"Запис додано — ",
+      toastMerged:"Записи об'єднано", toastCannotSplit:"Не можна розділити незавершений запис",
+      toastSplit:"Запис розділено навпіл — час можна виправити вручну", toastEditSaved:"Зміни збережено",
+      toastNeedDateStart:"Вкажіть дату і час початку", toastNeedManualFields:"Вкажіть дату, початок і закінчення",
+      toastStartFirst:"Спочатку розпочніть служіння",
+      toastSaveDataFail:"Не вдалося зберегти дані", toastSaveSettingsFail:"Не вдалося зберегти налаштування",
+      toastCsvSaved:"CSV збережено", toastBackupSaved:"Резервну копію збережено",
+      toastRestored:"Дані відновлено", toastImportFail:"Не вдалося прочитати файл",
+      csv:["Дата","Початок","Закінчення","Тривалість (хв)","Територія","Напарник","Теги","Коментар","Не враховується"],
+      csvYes:"так", csvNo:"ні"
+    },
+    de: {
+      locale:"de-DE", durH:" Std ", durM:" Min",
+      months:["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"],
+      dow:["Mo","Di","Mi","Do","Fr","Sa","So"],
+      tags:["Erstbesuch","Rückbesuch","Bibelstudium","Informelles Zeugnisgeben"],
+      navMain:"Start", navCalendar:"Kalender", navHistory:"Verlauf", navSettings:"Einstellungen",
+      topMain:"Dienst", topCalendar:"Kalender", topCalendarSub:"Tagesübersicht", topHistory:"Verlauf", topHistorySub:"Alle Einträge", topSettings:"Einstellungen", topSettingsSub:"App",
+      timerNotStarted:"Dienst nicht begonnen", timerRunning:"Dienst läuft",
+      metaStart:"Beginn", metaEnd:"Ende",
+      btnStart:"▶ Dienst beginnen", btnStop:"⏹ Dienst beenden",
+      btnAddNote:"+ Notiz hinzufügen", btnAddManual:"+ Eintrag manuell hinzufügen",
+      statToday:"Heute", statMonth:"Dieser Monat", statLastMonth:"Letzter Monat",
+      goalLabel:"Monatsziel", sectionAllEntries:"Alle Einträge",
+      emptyHistory:"Noch keine Einträge", emptyDayDetail:"Keine Einträge an diesem Tag",
+      histSelect:"auswählen", actEdit:"Bearbeiten", actNote:"Notiz", actExcludeOn:"Nicht zählen", actExcludeOff:"Zählen", actSplit:"Teilen", actDelete:"Löschen",
+      excludedNote:"Wird nicht in die Monatssumme gezählt",
+      mergeSelected:"2 Einträge ausgewählt", mergeBtn:"Zusammenführen",
+      confirmDelete:"Diesen Eintrag löschen?", confirmRestoreBackup:"Aktuelle Daten durch das Backup ersetzen?",
+      setGoalLabel:"Monatsziel (Stunden)", setThemeLabel:"Design", themeLight:"Hell", themeDark:"Dunkel", themeAuto:"Automatisch",
+      setFormatLabel:"Zeitformat", format24:"24 Std", format12:"12 Std (AM/PM)", setLangLabel:"Sprache",
+      setDataLabel:"Daten", btnExportCsv:"CSV exportieren", btnBackup:"Backup erstellen", btnImportTrigger:"Aus Backup wiederherstellen",
+      backupHint:"Das Backup speichert alle Einträge und Einstellungen in einer JSON-Datei, die später auf jedem Gerät wiederhergestellt werden kann.",
+      noteModalTitleNew:"Notiz zum Dienst", noteModalTitleAfterStop:"Notiz zum abgeschlossenen Dienst",
+      manualModalTitle:"Manueller Eintrag",
+      fieldTerritory:"Gebiet", fieldPartner:"Partner", fieldTags:"Tags", fieldComment:"Kommentar",
+      fieldDate:"Datum", fieldStart:"Beginn", fieldEnd:"Ende", withPrefix:"mit ",
+      durationLabel:"Dauer", hoursLabel:"Stunden", minutesLabel:"Minuten", useExactTime:"Genaue Start-/Endzeit angeben",
+      toastNeedDuration:"Bitte eine Dauer größer als null angeben",
+      placeholderTerritory:"Z. B. Zentrum, Abschnitt 5", placeholderPartner:"Name des Partners", placeholderComment:"Beliebige Notizen",
+      btnCancel:"Abbrechen", btnSave:"Speichern",
+      toastServiceStarted:"Dienst begonnen", toastServiceEnded:"Dienst beendet — ",
+      toastNoteSaved:"Notiz gespeichert", toastManualAdded:"Eintrag hinzugefügt — ",
+      toastMerged:"Einträge zusammengeführt", toastCannotSplit:"Ein laufender Eintrag kann nicht geteilt werden",
+      toastSplit:"Eintrag halbiert — Zeiten können manuell angepasst werden", toastEditSaved:"Änderungen gespeichert",
+      toastNeedDateStart:"Bitte Datum und Startzeit angeben", toastNeedManualFields:"Bitte Datum, Beginn und Ende angeben",
+      toastStartFirst:"Bitte zuerst den Dienst beginnen",
+      toastSaveDataFail:"Daten konnten nicht gespeichert werden", toastSaveSettingsFail:"Einstellungen konnten nicht gespeichert werden",
+      toastCsvSaved:"CSV gespeichert", toastBackupSaved:"Backup gespeichert",
+      toastRestored:"Daten wiederhergestellt", toastImportFail:"Datei konnte nicht gelesen werden",
+      csv:["Datum","Beginn","Ende","Dauer (Min)","Gebiet","Partner","Tags","Kommentar","Nicht gezählt"],
+      csvYes:"ja", csvNo:"nein"
+    },
+    en: {
+      locale:"en-US", durH:" h ", durM:" min",
+      months:["January","February","March","April","May","June","July","August","September","October","November","December"],
+      dow:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+      tags:["First visit","Return visit","Bible study","Informal witnessing"],
+      navMain:"Home", navCalendar:"Calendar", navHistory:"History", navSettings:"Settings",
+      topMain:"Service", topCalendar:"Calendar", topCalendarSub:"Daily overview", topHistory:"History", topHistorySub:"All entries", topSettings:"Settings", topSettingsSub:"App",
+      timerNotStarted:"Service not started", timerRunning:"Service in progress",
+      metaStart:"Start", metaEnd:"End",
+      btnStart:"▶ Start service", btnStop:"⏹ End service",
+      btnAddNote:"+ Add note", btnAddManual:"+ Add manual entry",
+      statToday:"Today", statMonth:"This month", statLastMonth:"Last month",
+      goalLabel:"Monthly goal", sectionAllEntries:"All entries",
+      emptyHistory:"No entries yet", emptyDayDetail:"No entries for this day",
+      histSelect:"select", actEdit:"Edit", actNote:"Note", actExcludeOn:"Exclude", actExcludeOff:"Include", actSplit:"Split", actDelete:"Delete",
+      excludedNote:"Not counted in the monthly total",
+      mergeSelected:"2 entries selected", mergeBtn:"Merge",
+      confirmDelete:"Delete this entry?", confirmRestoreBackup:"Replace current data with the backup contents?",
+      setGoalLabel:"Monthly goal (hours)", setThemeLabel:"Theme", themeLight:"Light", themeDark:"Dark", themeAuto:"Auto",
+      setFormatLabel:"Time format", format24:"24h", format12:"12h (AM/PM)", setLangLabel:"Language",
+      setDataLabel:"Data", btnExportCsv:"Export CSV", btnBackup:"Create backup", btnImportTrigger:"Restore from backup",
+      backupHint:"The backup saves all entries and settings to a JSON file that can be restored later on any device.",
+      noteModalTitleNew:"Service note", noteModalTitleAfterStop:"Note for the completed service",
+      manualModalTitle:"Manual entry",
+      fieldTerritory:"Territory", fieldPartner:"Partner", fieldTags:"Tags", fieldComment:"Comment",
+      fieldDate:"Date", fieldStart:"Start", fieldEnd:"End", withPrefix:"with ",
+      durationLabel:"Duration", hoursLabel:"Hours", minutesLabel:"Minutes", useExactTime:"Specify exact start/end time",
+      toastNeedDuration:"Please enter a duration greater than zero",
+      placeholderTerritory:"E.g. Downtown, section 5", placeholderPartner:"Partner's name", placeholderComment:"Any notes",
+      btnCancel:"Cancel", btnSave:"Save",
+      toastServiceStarted:"Service started", toastServiceEnded:"Service ended — ",
+      toastNoteSaved:"Note saved", toastManualAdded:"Entry added — ",
+      toastMerged:"Entries merged", toastCannotSplit:"Can't split an entry that hasn't ended",
+      toastSplit:"Entry split in half — adjust the times manually if needed", toastEditSaved:"Changes saved",
+      toastNeedDateStart:"Please enter a date and start time", toastNeedManualFields:"Please enter date, start and end",
+      toastStartFirst:"Start a service first",
+      toastSaveDataFail:"Failed to save data", toastSaveSettingsFail:"Failed to save settings",
+      toastCsvSaved:"CSV saved", toastBackupSaved:"Backup saved",
+      toastRestored:"Data restored", toastImportFail:"Couldn't read the file",
+      csv:["Date","Start","End","Duration (min)","Territory","Partner","Tags","Comment","Excluded"],
+      csvYes:"yes", csvNo:"no"
+    }
+  };
+  function lang(){ return I18N[state.settings.lang] ? state.settings.lang : "ru"; }
+  function t(key){ var d = I18N[lang()]; return (d && d[key]!=null) ? d[key] : (I18N.ru[key]!=null ? I18N.ru[key] : key); }
+  function currentTags(){ return t("tags"); }
   var state = {
     sessions: [],
-    settings: { goalHours: 30, theme: "auto", timeFormat: 24, weekStart: 1 },
+    settings: { goalHours: 30, theme: "auto", timeFormat: 24, weekStart: 1, lang: "ru" },
     view: "main",
     calMonth: new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0"),
     selectedDay: null,
@@ -379,6 +575,18 @@
     setTimeout(function(){ t.classList.remove("show"); }, 1800);
   }
 
+  function applyI18n(){
+    document.querySelectorAll("[data-i18n]").forEach(function(el){
+      el.textContent = t(el.dataset.i18n);
+    });
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(function(el){
+      el.setAttribute("placeholder", t(el.dataset.i18nPlaceholder));
+    });
+    var sel = document.getElementById("setLang");
+    if(sel) sel.value = lang();
+    document.documentElement.lang = lang();
+  }
+
   // ---------- storage (browser localStorage — persists on this device/browser) ----------
   async function loadState(){
     try{
@@ -393,11 +601,11 @@
   }
   async function saveSessions(){
     try{ localStorage.setItem("ministry-sessions", JSON.stringify(state.sessions)); }
-    catch(e){ toast("Не удалось сохранить данные"); }
+    catch(e){ toast(t("toastSaveDataFail")); }
   }
   async function saveSettings(){
     try{ localStorage.setItem("ministry-settings", JSON.stringify(state.settings)); }
-    catch(e){ toast("Не удалось сохранить настройки"); }
+    catch(e){ toast(t("toastSaveSettingsFail")); }
   }
 
   // ---------- date helpers ----------
@@ -416,7 +624,7 @@
   function fmtDurationShort(ms){
     var totalMin = Math.round(ms/60000);
     var h = Math.floor(totalMin/60), m = totalMin%60;
-    return h+" ч "+m+" мин";
+    return h+t("durH")+m+t("durM");
   }
   function fmtHM(ms){
     var s = Math.floor(ms/1000);
@@ -444,7 +652,13 @@
     document.querySelectorAll(".view").forEach(function(el){ el.classList.remove("active"); });
     document.getElementById("view-"+v).classList.add("active");
     document.querySelectorAll(".nav-btn").forEach(function(b){ b.classList.toggle("active", b.dataset.view===v); });
-    var labels = {main:["Служение", new Date().toLocaleDateString("ru-RU",{day:"numeric",month:"long"})], calendar:["Календарь","Обзор по дням"], history:["История","Все записи"], settings:["Настройки","Приложение"]};
+    var locale = I18N[lang()].locale;
+    var labels = {
+      main:[t("topMain"), new Date().toLocaleDateString(locale,{day:"numeric",month:"long"})],
+      calendar:[t("topCalendar"), t("topCalendarSub")],
+      history:[t("topHistory"), t("topHistorySub")],
+      settings:[t("topSettings"), t("topSettingsSub")]
+    };
     document.getElementById("topLabel").textContent = labels[v][0];
     document.getElementById("topDate").textContent = labels[v][1];
     if(v==="calendar") renderCalendar();
@@ -459,9 +673,9 @@
     var btn = document.getElementById("mainBtn");
     var ring = document.getElementById("ringProgress");
     if(act){
-      btn.textContent = "⏹ Закончить служение";
+      btn.textContent = t("btnStop");
       btn.className = "big-btn stop";
-      document.getElementById("timerState").textContent = "Служение идёт";
+      document.getElementById("timerState").textContent = t("timerRunning");
       document.getElementById("metaStart").textContent = fmtTime(act.start);
       document.getElementById("metaEnd").textContent = "—";
       var ms = durationMs(act);
@@ -470,9 +684,9 @@
       ring.style.strokeDashoffset = RING_CIRC*(1-frac);
       ring.style.opacity = 1;
     } else {
-      btn.textContent = "▶ Начать служение";
+      btn.textContent = t("btnStart");
       btn.className = "big-btn start";
-      document.getElementById("timerState").textContent = "Служение не начато";
+      document.getElementById("timerState").textContent = t("timerNotStarted");
       var last = state.sessions.length ? state.sessions[state.sessions.length-1] : null;
       if(last && last.end && dateKey(new Date(last.start))===todayKey()){
         document.getElementById("metaStart").textContent = fmtTime(last.start);
@@ -510,7 +724,7 @@
 
     var goalMs = state.settings.goalHours*3600000;
     var pct = goalMs>0 ? Math.min(100, Math.round(sumMonth/goalMs*100)) : 0;
-    document.getElementById("goalText").textContent = (sumMonth/3600000).toFixed(1)+" / "+state.settings.goalHours+" ч";
+    document.getElementById("goalText").textContent = (sumMonth/3600000).toFixed(1)+" / "+state.settings.goalHours+t("durH").trim();
     var fill = document.getElementById("goalFill");
     fill.style.width = pct+"%";
     fill.classList.toggle("over", sumMonth >= goalMs);
@@ -528,12 +742,12 @@
       state.sessions.push({ id: uid(), start: new Date().toISOString(), end: null, note: {territory:"",partner:"",comment:"",tags:[]}, excluded:false });
       await saveSessions();
       renderTimer();
-      toast("Служение начато");
+      toast(t("toastServiceStarted"));
     } else {
       act.end = new Date().toISOString();
       await saveSessions();
       renderTimer();
-      toast("Служение завершено — "+fmtDurationShort(durationMs(act)));
+      toast(t("toastServiceEnded")+fmtDurationShort(durationMs(act)));
       openNoteModal(act.id, true);
     }
   }
@@ -542,7 +756,7 @@
     var s = state.sessions.find(function(x){ return x.id===sessionId; });
     if(!s) return;
     state.editingNoteFor = sessionId;
-    document.getElementById("noteModalTitle").textContent = afterStop ? "Заметка о завершённом служении" : "Заметка о служении";
+    document.getElementById("noteModalTitle").textContent = afterStop ? t("noteModalTitleAfterStop") : t("noteModalTitleNew");
     document.getElementById("noteTerritory").value = s.note.territory||"";
     document.getElementById("notePartner").value = s.note.partner||"";
     document.getElementById("noteComment").value = s.note.comment||"";
@@ -553,7 +767,7 @@
   function renderTags(){
     var row = document.getElementById("tagRow");
     row.innerHTML = "";
-    TAGS.forEach(function(tag){
+    currentTags().forEach(function(tag){
       var el = document.createElement("div");
       el.className = "tag"+(state.activeTags.indexOf(tag)>=0?" active":"");
       el.textContent = tag;
@@ -575,7 +789,7 @@
         tags: state.activeTags.slice()
       };
       await saveSessions();
-      toast("Заметка сохранена");
+      toast(t("toastNoteSaved"));
       renderHistory();
     }
     closeNoteModal();
@@ -587,25 +801,49 @@
 
   // ---------- manual entry ----------
   var manualTags = [];
-  function openManualModal(){
+  var DURATION_CHIPS = [5,10,15,30,60,120]; // minutes
+  function openManualModal(presetDate){
     var now = new Date();
-    document.getElementById("manDate").value = dateKey(now);
+    document.getElementById("manDate").value = presetDate || dateKey(now);
     document.getElementById("manStart").value = "";
     document.getElementById("manEnd").value = "";
+    document.getElementById("manHours").value = 0;
+    document.getElementById("manMinutes").value = 0;
+    document.getElementById("manUseExact").checked = false;
+    document.getElementById("exactTimeRow").style.display = "none";
     document.getElementById("manTerritory").value = "";
     document.getElementById("manPartner").value = "";
     document.getElementById("manComment").value = "";
     manualTags = [];
     renderManualTags();
+    renderDurationChips();
     document.getElementById("manualOverlay").classList.add("open");
   }
   function closeManualModal(){
     document.getElementById("manualOverlay").classList.remove("open");
   }
+  function renderDurationChips(){
+    var row = document.getElementById("durationChips");
+    row.innerHTML = "";
+    var curH = parseInt(document.getElementById("manHours").value,10)||0;
+    var curM = parseInt(document.getElementById("manMinutes").value,10)||0;
+    var curTotal = curH*60+curM;
+    DURATION_CHIPS.forEach(function(mins){
+      var el = document.createElement("div");
+      el.className = "tag"+(curTotal===mins?" active":"");
+      el.textContent = mins>=60 ? (mins/60)+t("durH").trim() : mins+t("durM").trim();
+      el.onclick = function(){
+        document.getElementById("manHours").value = Math.floor(mins/60);
+        document.getElementById("manMinutes").value = mins%60;
+        renderDurationChips();
+      };
+      row.appendChild(el);
+    });
+  }
   function renderManualTags(){
     var row = document.getElementById("manTagRow");
     row.innerHTML = "";
-    TAGS.forEach(function(tag){
+    currentTags().forEach(function(tag){
       var el = document.createElement("div");
       el.className = "tag"+(manualTags.indexOf(tag)>=0?" active":"");
       el.textContent = tag;
@@ -619,12 +857,24 @@
   }
   async function saveManualEntry(){
     var dateVal = document.getElementById("manDate").value;
-    var startVal = document.getElementById("manStart").value;
-    var endVal = document.getElementById("manEnd").value;
-    if(!dateVal || !startVal || !endVal){ toast("Укажите дату, начало и окончание"); return; }
-    var start = new Date(dateVal+"T"+startVal+":00");
-    var end = new Date(dateVal+"T"+endVal+":00");
-    if(end <= start) end.setDate(end.getDate()+1); // handles entries that cross midnight
+    if(!dateVal){ toast(t("toastNeedManualFields")); return; }
+    var start, end;
+    if(document.getElementById("manUseExact").checked){
+      var startVal = document.getElementById("manStart").value;
+      var endVal = document.getElementById("manEnd").value;
+      if(!startVal || !endVal){ toast(t("toastNeedManualFields")); return; }
+      start = new Date(dateVal+"T"+startVal+":00");
+      end = new Date(dateVal+"T"+endVal+":00");
+      if(end <= start) end.setDate(end.getDate()+1); // handles entries that cross midnight
+    } else {
+      var hours = parseInt(document.getElementById("manHours").value,10)||0;
+      var minutes = parseInt(document.getElementById("manMinutes").value,10)||0;
+      var totalMin = hours*60+minutes;
+      if(totalMin<=0){ toast(t("toastNeedDuration")); return; }
+      var now = new Date();
+      end = new Date(dateVal+"T"+pad(now.getHours())+":"+pad(now.getMinutes())+":00");
+      start = new Date(end.getTime() - totalMin*60000);
+    }
     state.sessions.push({
       id: uid(),
       start: start.toISOString(),
@@ -638,7 +888,7 @@
       excluded: false
     });
     await saveSessions();
-    toast("Запись добавлена — "+fmtDurationShort(end-start));
+    toast(t("toastManualAdded")+fmtDurationShort(end-start));
     closeManualModal();
     renderTimer();
     if(state.view === "history") renderHistory();
@@ -656,7 +906,7 @@
   function renderCalendar(){
     var parts = state.calMonth.split("-").map(Number);
     var year = parts[0], month = parts[1]-1;
-    var monthNames = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+    var monthNames = t("months");
     document.getElementById("calMonthLabel").textContent = monthNames[month]+" "+year;
 
     var byDay = {};
@@ -669,7 +919,7 @@
 
     var grid = document.getElementById("calGrid");
     grid.innerHTML = "";
-    ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].forEach(function(d){
+    t("dow").forEach(function(d){
       var el = document.createElement("div"); el.className="cal-dow"; el.textContent=d; grid.appendChild(el);
     });
     var firstDow = (new Date(year, month, 1).getDay()+6)%7; // Monday=0
@@ -693,19 +943,22 @@
     var dparts = state.selectedDay.split("-");
     var label = dparts[2]+"."+dparts[1]+"."+dparts[0];
     var html = "<div class='day-detail'><h4>"+label+"</h4>";
-    if(!list.length){ html += "<div class='empty-note'>Нет записей за этот день</div>"; }
+    if(!list.length){ html += "<div class='empty-note'>"+t("emptyDayDetail")+"</div>"; }
     list.forEach(function(s){
       html += "<div class='entry'><span>"+fmtTime(s.start)+"–"+(s.end?fmtTime(s.end):"...")+"</span><span>"+fmtDurationShort(durationMs(s))+"</span></div>";
     });
+    html += "<button class='note-btn' id='dayAddBtn' style='margin-top:10px;'>"+t("btnAddManual")+"</button>";
     html += "</div>";
     box.innerHTML = html;
+    var dayForBtn = state.selectedDay;
+    document.getElementById("dayAddBtn").onclick = function(){ openManualModal(dayForBtn); };
   }
 
   // ---------- history ----------
   function renderHistory(){
     var list = document.getElementById("historyList");
     var sorted = state.sessions.slice().sort(function(a,b){ return new Date(b.start)-new Date(a.start); });
-    if(!sorted.length){ list.innerHTML = "<div class='empty-note'>Записей пока нет</div>"; renderMergeBar(); return; }
+    if(!sorted.length){ list.innerHTML = "<div class='empty-note'>"+t("emptyHistory")+"</div>"; renderMergeBar(); return; }
     list.innerHTML = "";
     sorted.forEach(function(s){
       var row = document.createElement("div");
@@ -715,21 +968,21 @@
       var noteBits = [];
       if(s.note){
         if(s.note.territory) noteBits.push(s.note.territory);
-        if(s.note.partner) noteBits.push("с "+s.note.partner);
+        if(s.note.partner) noteBits.push(t("withPrefix")+s.note.partner);
         if(s.note.tags && s.note.tags.length) noteBits.push(s.note.tags.join(", "));
         if(s.note.comment) noteBits.push(s.note.comment);
       }
       row.innerHTML =
-        "<label class='chk-wrap' style='float:right;'><input type='checkbox' data-merge='"+s.id+"' style='margin-right:4px;'>выбрать</label>"+
+        "<label class='chk-wrap' style='float:right;'><input type='checkbox' data-merge='"+s.id+"' style='margin-right:4px;'>"+t("histSelect")+"</label>"+
         "<div class='hist-top'><div class='when'><b>"+dateLabel+"</b> · "+fmtTime(s.start)+"–"+(s.end?fmtTime(s.end):"…")+"</div><div class='dur'>"+fmtDurationShort(durationMs(s))+"</div></div>"+
         (noteBits.length?"<div class='hist-note'>"+noteBits.join(" · ")+"</div>":"")+
-        (s.excluded?"<div class='hist-note' style='color:var(--amber)'>Не учитывается в итоге месяца</div>":"")+
+        (s.excluded?"<div class='hist-note' style='color:var(--amber)'>"+t("excludedNote")+"</div>":"")+
         "<div class='hist-actions'>"+
-          "<button data-act='edit' data-id='"+s.id+"'>Изменить</button>"+
-          "<button data-act='note' data-id='"+s.id+"'>Заметка</button>"+
-          "<button data-act='exclude' data-id='"+s.id+"'>"+(s.excluded?"Учитывать":"Не учитывать")+"</button>"+
-          "<button data-act='split' data-id='"+s.id+"'>Разделить</button>"+
-          "<button class='danger' data-act='delete' data-id='"+s.id+"'>Удалить</button>"+
+          "<button data-act='edit' data-id='"+s.id+"'>"+t("actEdit")+"</button>"+
+          "<button data-act='note' data-id='"+s.id+"'>"+t("actNote")+"</button>"+
+          "<button data-act='exclude' data-id='"+s.id+"'>"+(s.excluded?t("actExcludeOff"):t("actExcludeOn"))+"</button>"+
+          "<button data-act='split' data-id='"+s.id+"'>"+t("actSplit")+"</button>"+
+          "<button class='danger' data-act='delete' data-id='"+s.id+"'>"+t("actDelete")+"</button>"+
         "</div>"+
         "<div class='edit-slot'></div>";
       list.appendChild(row);
@@ -740,7 +993,7 @@
     var bar = document.getElementById("mergeBar");
     var checked = Array.prototype.slice.call(document.querySelectorAll("[data-merge]:checked")).map(function(c){ return c.dataset.merge; });
     if(checked.length===2){
-      bar.innerHTML = "<div class='merge-bar'><span>Выбрано записей: 2</span><button id='doMerge'>Объединить</button></div>";
+      bar.innerHTML = "<div class='merge-bar'><span>"+t("mergeSelected")+"</span><button id='doMerge'>"+t("mergeBtn")+"</button></div>";
       document.getElementById("doMerge").onclick = function(){ mergeSessions(checked[0], checked[1]); };
     } else {
       bar.innerHTML = "";
@@ -763,18 +1016,18 @@
     state.sessions = state.sessions.filter(function(s){ return s.id!==id1 && s.id!==id2; });
     state.sessions.push({ id: uid(), start:newStart, end:newEnd, note:mergedNote, excluded:false });
     await saveSessions();
-    toast("Записи объединены");
+    toast(t("toastMerged"));
     renderHistory();
   }
   async function splitSession(id){
     var s = state.sessions.find(function(x){ return x.id===id; });
-    if(!s || !s.end) { toast("Нельзя разделить незавершённую запись"); return; }
+    if(!s || !s.end) { toast(t("toastCannotSplit")); return; }
     var mid = new Date((new Date(s.start).getTime() + new Date(s.end).getTime())/2);
     var second = { id: uid(), start: mid.toISOString(), end: s.end, note: Object.assign({},s.note), excluded: s.excluded };
     s.end = mid.toISOString();
     state.sessions.push(second);
     await saveSessions();
-    toast("Запись разделена пополам — время можно поправить вручную");
+    toast(t("toastSplit"));
     renderHistory();
   }
   function openEdit(id){
@@ -784,16 +1037,16 @@
     var sd = new Date(s.start), ed = s.end ? new Date(s.end) : null;
     slot.innerHTML =
       "<div class='edit-form'>"+
-      "<div><label>Дата</label><input type='date' id='ef-date' value='"+dateKey(sd)+"'></div>"+
-      "<div><label>Начало</label><input type='time' id='ef-start' value='"+pad(sd.getHours())+":"+pad(sd.getMinutes())+"'></div>"+
-      "<div><label>Окончание</label><input type='time' id='ef-end' value='"+(ed?pad(ed.getHours())+":"+pad(ed.getMinutes()):"")+"'></div>"+
-      "<div class='save-row'><button class='primary' id='ef-save'>Сохранить</button><button class='ghost' id='ef-cancel'>Отмена</button></div>"+
+      "<div><label>"+t("fieldDate")+"</label><input type='date' id='ef-date' value='"+dateKey(sd)+"'></div>"+
+      "<div><label>"+t("fieldStart")+"</label><input type='time' id='ef-start' value='"+pad(sd.getHours())+":"+pad(sd.getMinutes())+"'></div>"+
+      "<div><label>"+t("fieldEnd")+"</label><input type='time' id='ef-end' value='"+(ed?pad(ed.getHours())+":"+pad(ed.getMinutes()):"")+"'></div>"+
+      "<div class='save-row'><button class='primary' id='ef-save'>"+t("btnSave")+"</button><button class='ghost' id='ef-cancel'>"+t("btnCancel")+"</button></div>"+
       "</div>";
     document.getElementById("ef-save").onclick = async function(){
       var dateVal = document.getElementById("ef-date").value;
       var startVal = document.getElementById("ef-start").value;
       var endVal = document.getElementById("ef-end").value;
-      if(!dateVal || !startVal){ toast("Укажите дату и время начала"); return; }
+      if(!dateVal || !startVal){ toast(t("toastNeedDateStart")); return; }
       var newStart = new Date(dateVal+"T"+startVal+":00");
       s.start = newStart.toISOString();
       if(endVal){
@@ -802,25 +1055,25 @@
         s.end = newEnd.toISOString();
       }
       await saveSessions();
-      toast("Изменения сохранены");
+      toast(t("toastEditSaved"));
       renderHistory();
     };
     document.getElementById("ef-cancel").onclick = function(){ slot.innerHTML = ""; };
   }
 
   document.getElementById("historyList").addEventListener("click", function(ev){
-    var t = ev.target;
-    if(t.dataset.act === "edit") openEdit(t.dataset.id);
-    if(t.dataset.act === "note") openNoteModal(t.dataset.id, false);
-    if(t.dataset.act === "split") splitSession(t.dataset.id);
-    if(t.dataset.act === "delete"){
-      if(confirm("Удалить эту запись?")){
-        state.sessions = state.sessions.filter(function(s){ return s.id!==t.dataset.id; });
+    var el = ev.target;
+    if(el.dataset.act === "edit") openEdit(el.dataset.id);
+    if(el.dataset.act === "note") openNoteModal(el.dataset.id, false);
+    if(el.dataset.act === "split") splitSession(el.dataset.id);
+    if(el.dataset.act === "delete"){
+      if(confirm(t("confirmDelete"))){
+        state.sessions = state.sessions.filter(function(s){ return s.id!==el.dataset.id; });
         saveSessions(); renderHistory();
       }
     }
-    if(t.dataset.act === "exclude"){
-      var s = state.sessions.find(function(x){ return x.id===t.dataset.id; });
+    if(el.dataset.act === "exclude"){
+      var s = state.sessions.find(function(x){ return x.id===el.dataset.id; });
       s.excluded = !s.excluded;
       saveSessions(); renderHistory();
     }
@@ -834,6 +1087,7 @@
     document.getElementById("setGoal").value = state.settings.goalHours;
     document.querySelectorAll("#segTheme button").forEach(function(b){ b.classList.toggle("active", b.dataset.v===state.settings.theme); });
     document.querySelectorAll("#segFormat button").forEach(function(b){ b.classList.toggle("active", b.dataset.v==String(state.settings.timeFormat)); });
+    document.getElementById("setLang").value = lang();
   }
   document.getElementById("setGoal").addEventListener("change", function(e){
     var v = parseInt(e.target.value,10);
@@ -850,9 +1104,19 @@
     state.settings.timeFormat = parseInt(e.target.dataset.v,10);
     saveSettings(); renderSettings(); renderTimer();
   });
+  document.getElementById("setLang").addEventListener("change", function(e){
+    state.settings.lang = e.target.value;
+    saveSettings();
+    applyI18n();
+    renderTimer();
+    if(state.view==="calendar") renderCalendar();
+    if(state.view==="history") renderHistory();
+    renderSettings();
+    setView(state.view);
+  });
 
   function toCsv(){
-    var rows = [["Дата","Начало","Окончание","Длительность (мин)","Территория","Напарник","Теги","Комментарий","Не учитывается"]];
+    var rows = [t("csv")];
     state.sessions.slice().sort(function(a,b){return new Date(a.start)-new Date(b.start);}).forEach(function(s){
       rows.push([
         dateKey(new Date(s.start)),
@@ -861,7 +1125,7 @@
         Math.round(durationMs(s)/60000),
         s.note.territory||"", s.note.partner||"",
         (s.note.tags||[]).join("; "), (s.note.comment||"").replace(/\n/g," "),
-        s.excluded?"да":"нет"
+        s.excluded?t("csvYes"):t("csvNo")
       ]);
     });
     return rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(","); }).join("\r\n");
@@ -874,13 +1138,13 @@
     setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 500);
   }
   document.getElementById("btnExportCsv").onclick = function(){
-    downloadFile("\uFEFF"+toCsv(), "служение_"+todayKey()+".csv", "text/csv;charset=utf-8");
-    toast("CSV сохранён");
+    downloadFile("\uFEFF"+toCsv(), "service-log_"+todayKey()+".csv", "text/csv;charset=utf-8");
+    toast(t("toastCsvSaved"));
   };
   document.getElementById("btnBackup").onclick = function(){
     var payload = JSON.stringify({sessions:state.sessions, settings:state.settings}, null, 2);
-    downloadFile(payload, "backup_служение_"+todayKey()+".json", "application/json");
-    toast("Резервная копия сохранена");
+    downloadFile(payload, "backup_service-log_"+todayKey()+".json", "application/json");
+    toast(t("toastBackupSaved"));
   };
   document.getElementById("btnImportTrigger").onclick = function(){ document.getElementById("fileImport").click(); };
   document.getElementById("fileImport").addEventListener("change", function(e){
@@ -890,13 +1154,13 @@
     reader.onload = async function(ev){
       try{
         var data = JSON.parse(ev.target.result);
-        if(!confirm("Заменить текущие данные содержимым резервной копии?")) return;
+        if(!confirm(t("confirmRestoreBackup"))) return;
         if(Array.isArray(data.sessions)) state.sessions = data.sessions;
         if(data.settings) state.settings = Object.assign(state.settings, data.settings);
         await saveSessions(); await saveSettings();
-        applyTheme(); renderTimer(); renderSettings();
-        toast("Данные восстановлены");
-      }catch(err){ toast("Не удалось прочитать файл"); }
+        applyTheme(); applyI18n(); renderTimer(); renderSettings();
+        toast(t("toastRestored"));
+      }catch(err){ toast(t("toastImportFail")); }
     };
     reader.readAsText(file);
     e.target.value = "";
@@ -907,7 +1171,7 @@
   document.getElementById("addNoteBtn").onclick = function(){
     var act = activeSession();
     var target = act || (state.sessions.length ? state.sessions[state.sessions.length-1] : null);
-    if(!target){ toast("Сначала начните служение"); return; }
+    if(!target){ toast(t("toastStartFirst")); return; }
     openNoteModal(target.id, false);
   };
   document.getElementById("noteCancel").onclick = closeNoteModal;
@@ -915,6 +1179,12 @@
   document.getElementById("addManualBtn").onclick = openManualModal;
   document.getElementById("manCancel").onclick = closeManualModal;
   document.getElementById("manSave").onclick = saveManualEntry;
+  document.getElementById("manHours").addEventListener("input", renderDurationChips);
+  document.getElementById("manMinutes").addEventListener("input", renderDurationChips);
+  document.getElementById("manUseExact").addEventListener("change", function(e){
+    document.getElementById("exactTimeRow").style.display = e.target.checked ? "grid" : "none";
+    document.getElementById("durationField").style.display = e.target.checked ? "none" : "block";
+  });
   document.getElementById("calPrev").onclick = function(){ shiftMonth(-1); };
   document.getElementById("calNext").onclick = function(){ shiftMonth(1); };
   document.querySelectorAll(".nav-btn").forEach(function(b){ b.onclick = function(){ setView(b.dataset.view); }; });
@@ -923,6 +1193,7 @@
   // ---------- init ----------
   (async function init(){
     await loadState();
+    applyI18n();
     renderTimer();
     startTicking();
     setView("main");
