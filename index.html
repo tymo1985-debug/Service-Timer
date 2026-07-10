@@ -215,6 +215,7 @@
         </div>
         <button class="big-btn start" id="mainBtn">▶ Начать служение</button>
         <button class="note-btn" id="addNoteBtn">+ Добавить заметку</button>
+        <button class="note-btn" id="addManualBtn" style="margin-top:8px;">+ Добавить запись вручную</button>
       </div>
 
       <div class="stats-grid">
@@ -313,6 +314,40 @@
     <div class="modal-actions">
       <button class="ghost" id="noteCancel">Отмена</button>
       <button class="primary" id="noteSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="manualOverlay">
+  <div class="modal">
+    <h3>Запись вручную</h3>
+    <div class="field">
+      <label>Дата</label>
+      <input type="date" id="manDate">
+    </div>
+    <div class="edit-form" style="margin-bottom:12px;">
+      <div><label>Начало</label><input type="time" id="manStart"></div>
+      <div><label>Окончание</label><input type="time" id="manEnd"></div>
+    </div>
+    <div class="field">
+      <label>Территория</label>
+      <input type="text" id="manTerritory" placeholder="Например: Центр, участок 5">
+    </div>
+    <div class="field">
+      <label>Напарник</label>
+      <input type="text" id="manPartner" placeholder="Имя напарника">
+    </div>
+    <div class="field">
+      <label>Теги</label>
+      <div class="tag-row" id="manTagRow"></div>
+    </div>
+    <div class="field">
+      <label>Комментарий</label>
+      <textarea id="manComment" rows="2" placeholder="Любые заметки"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="manCancel">Отмена</button>
+      <button class="primary" id="manSave">Сохранить</button>
     </div>
   </div>
 </div>
@@ -548,6 +583,66 @@
   function closeNoteModal(){
     document.getElementById("noteOverlay").classList.remove("open");
     state.editingNoteFor = null;
+  }
+
+  // ---------- manual entry ----------
+  var manualTags = [];
+  function openManualModal(){
+    var now = new Date();
+    document.getElementById("manDate").value = dateKey(now);
+    document.getElementById("manStart").value = "";
+    document.getElementById("manEnd").value = "";
+    document.getElementById("manTerritory").value = "";
+    document.getElementById("manPartner").value = "";
+    document.getElementById("manComment").value = "";
+    manualTags = [];
+    renderManualTags();
+    document.getElementById("manualOverlay").classList.add("open");
+  }
+  function closeManualModal(){
+    document.getElementById("manualOverlay").classList.remove("open");
+  }
+  function renderManualTags(){
+    var row = document.getElementById("manTagRow");
+    row.innerHTML = "";
+    TAGS.forEach(function(tag){
+      var el = document.createElement("div");
+      el.className = "tag"+(manualTags.indexOf(tag)>=0?" active":"");
+      el.textContent = tag;
+      el.onclick = function(){
+        var i = manualTags.indexOf(tag);
+        if(i>=0) manualTags.splice(i,1); else manualTags.push(tag);
+        renderManualTags();
+      };
+      row.appendChild(el);
+    });
+  }
+  async function saveManualEntry(){
+    var dateVal = document.getElementById("manDate").value;
+    var startVal = document.getElementById("manStart").value;
+    var endVal = document.getElementById("manEnd").value;
+    if(!dateVal || !startVal || !endVal){ toast("Укажите дату, начало и окончание"); return; }
+    var start = new Date(dateVal+"T"+startVal+":00");
+    var end = new Date(dateVal+"T"+endVal+":00");
+    if(end <= start) end.setDate(end.getDate()+1); // handles entries that cross midnight
+    state.sessions.push({
+      id: uid(),
+      start: start.toISOString(),
+      end: end.toISOString(),
+      note: {
+        territory: document.getElementById("manTerritory").value.trim(),
+        partner: document.getElementById("manPartner").value.trim(),
+        comment: document.getElementById("manComment").value.trim(),
+        tags: manualTags.slice()
+      },
+      excluded: false
+    });
+    await saveSessions();
+    toast("Запись добавлена — "+fmtDurationShort(end-start));
+    closeManualModal();
+    renderTimer();
+    if(state.view === "history") renderHistory();
+    if(state.view === "calendar") renderCalendar();
   }
 
   // ---------- calendar ----------
@@ -817,6 +912,9 @@
   };
   document.getElementById("noteCancel").onclick = closeNoteModal;
   document.getElementById("noteSave").onclick = saveNote;
+  document.getElementById("addManualBtn").onclick = openManualModal;
+  document.getElementById("manCancel").onclick = closeManualModal;
+  document.getElementById("manSave").onclick = saveManualEntry;
   document.getElementById("calPrev").onclick = function(){ shiftMonth(-1); };
   document.getElementById("calNext").onclick = function(){ shiftMonth(1); };
   document.querySelectorAll(".nav-btn").forEach(function(b){ b.onclick = function(){ setView(b.dataset.view); }; });
