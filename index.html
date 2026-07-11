@@ -89,6 +89,9 @@
   .big-btn:active{ transform:scale(0.98); }
   .big-btn.start{ background:var(--teal); color:#fff; }
   .big-btn.stop{ background:var(--red); color:#fff; }
+  .big-btn.pause{ background:var(--amber); color:#fff; }
+  .big-btn.resume{ background:var(--teal); color:#fff; }
+  .timer-label.paused{ color:var(--amber); }
   .icon{ font-size:20px; line-height:1; }
 
   .note-btn{ width:100%; margin-top:12px; border:1px solid var(--line); background:var(--paper-2); color:var(--ink-soft); border-radius:12px; padding:12px; font-size:14px; font-family:inherit; cursor:pointer; }
@@ -217,7 +220,9 @@
           <div><span data-i18n="metaStart">Начало</span><b id="metaStart">—</b></div>
           <div><span data-i18n="metaEnd">Окончание</span><b id="metaEnd">—</b></div>
         </div>
-        <button class="big-btn start" id="mainBtn">▶ Начать служение</button>
+        <div id="mainBtnRow" style="display:flex; gap:10px;">
+          <button class="big-btn start" id="mainBtn">▶ Начать служение</button>
+        </div>
         <button class="note-btn" id="addNoteBtn" data-i18n="btnAddNote">+ Добавить заметку</button>
         <button class="note-btn" id="addManualBtn" data-i18n="btnAddManual" style="margin-top:8px;">+ Добавить запись вручную</button>
       </div>
@@ -400,9 +405,9 @@
       tags:["Первое посещение","Повторное посещение","Изучение","Неформальное свидетельство"],
       navMain:"Главная", navCalendar:"Календарь", navHistory:"История", navSettings:"Настройки",
       topMain:"Служение", topCalendar:"Календарь", topCalendarSub:"Обзор по дням", topHistory:"История", topHistorySub:"Все записи", topSettings:"Настройки", topSettingsSub:"Приложение",
-      timerNotStarted:"Служение не начато", timerRunning:"Служение идёт",
+      timerNotStarted:"Служение не начато", timerRunning:"Служение идёт", timerPaused:"На паузе",
       metaStart:"Начало", metaEnd:"Окончание",
-      btnStart:"▶ Начать служение", btnStop:"⏹ Закончить служение",
+      btnStart:"▶ Начать служение", btnStop:"⏹ Закончить", btnPause:"⏸ Пауза", btnResume:"▶ Продолжить",
       btnAddNote:"+ Добавить заметку", btnAddManual:"+ Добавить запись вручную",
       statToday:"Сегодня", statMonth:"Этот месяц", statLastMonth:"Прошлый месяц",
       goalLabel:"Цель на месяц", sectionAllEntries:"Все записи",
@@ -442,9 +447,9 @@
       tags:["Перше відвідування","Повторне відвідування","Вивчення","Неформальне свідчення"],
       navMain:"Головна", navCalendar:"Календар", navHistory:"Історія", navSettings:"Налаштування",
       topMain:"Служіння", topCalendar:"Календар", topCalendarSub:"Огляд по днях", topHistory:"Історія", topHistorySub:"Усі записи", topSettings:"Налаштування", topSettingsSub:"Додаток",
-      timerNotStarted:"Служіння не розпочато", timerRunning:"Служіння триває",
+      timerNotStarted:"Служіння не розпочато", timerRunning:"Служіння триває", timerPaused:"На паузі",
       metaStart:"Початок", metaEnd:"Закінчення",
-      btnStart:"▶ Почати служіння", btnStop:"⏹ Закінчити служіння",
+      btnStart:"▶ Почати служіння", btnStop:"⏹ Закінчити", btnPause:"⏸ Пауза", btnResume:"▶ Продовжити",
       btnAddNote:"+ Додати нотатку", btnAddManual:"+ Додати запис вручну",
       statToday:"Сьогодні", statMonth:"Цей місяць", statLastMonth:"Минулий місяць",
       goalLabel:"Ціль на місяць", sectionAllEntries:"Усі записи",
@@ -484,9 +489,9 @@
       tags:["Erstbesuch","Rückbesuch","Bibelstudium","Informelles Zeugnisgeben"],
       navMain:"Start", navCalendar:"Kalender", navHistory:"Verlauf", navSettings:"Einstellungen",
       topMain:"Dienst", topCalendar:"Kalender", topCalendarSub:"Tagesübersicht", topHistory:"Verlauf", topHistorySub:"Alle Einträge", topSettings:"Einstellungen", topSettingsSub:"App",
-      timerNotStarted:"Dienst nicht begonnen", timerRunning:"Dienst läuft",
+      timerNotStarted:"Dienst nicht begonnen", timerRunning:"Dienst läuft", timerPaused:"Pausiert",
       metaStart:"Beginn", metaEnd:"Ende",
-      btnStart:"▶ Dienst beginnen", btnStop:"⏹ Dienst beenden",
+      btnStart:"▶ Dienst beginnen", btnStop:"⏹ Beenden", btnPause:"⏸ Pause", btnResume:"▶ Fortsetzen",
       btnAddNote:"+ Notiz hinzufügen", btnAddManual:"+ Eintrag manuell hinzufügen",
       statToday:"Heute", statMonth:"Dieser Monat", statLastMonth:"Letzter Monat",
       goalLabel:"Monatsziel", sectionAllEntries:"Alle Einträge",
@@ -526,9 +531,9 @@
       tags:["First visit","Return visit","Bible study","Informal witnessing"],
       navMain:"Home", navCalendar:"Calendar", navHistory:"History", navSettings:"Settings",
       topMain:"Service", topCalendar:"Calendar", topCalendarSub:"Daily overview", topHistory:"History", topHistorySub:"All entries", topSettings:"Settings", topSettingsSub:"App",
-      timerNotStarted:"Service not started", timerRunning:"Service in progress",
+      timerNotStarted:"Service not started", timerRunning:"Service in progress", timerPaused:"Paused",
       metaStart:"Start", metaEnd:"End",
-      btnStart:"▶ Start service", btnStop:"⏹ End service",
+      btnStart:"▶ Start service", btnStop:"⏹ End", btnPause:"⏸ Pause", btnResume:"▶ Resume",
       btnAddNote:"+ Add note", btnAddManual:"+ Add manual entry",
       statToday:"Today", statMonth:"This month", statLastMonth:"Last month",
       goalLabel:"Monthly goal", sectionAllEntries:"All entries",
@@ -630,7 +635,12 @@
   }
   function dateKey(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
   function todayKey(){ return dateKey(new Date()); }
-  function durationMs(s){ var end = s.end ? new Date(s.end) : new Date(); return end - new Date(s.start); }
+  function durationMs(s){
+    var end = s.end ? new Date(s.end) : new Date();
+    var raw = end - new Date(s.start);
+    var pausedTotal = (s.pausedMs||0) + ((s.paused && s.pausedAt) ? (new Date() - new Date(s.pausedAt)) : 0);
+    return Math.max(0, raw - pausedTotal);
+  }
   function fmtDurationShort(ms){
     var totalMin = Math.round(ms/60000);
     var h = Math.floor(totalMin/60), m = totalMin%60;
@@ -754,12 +764,16 @@
   var RING_CIRC = 2*Math.PI*104;
   function renderTimer(){
     var act = activeSession();
-    var btn = document.getElementById("mainBtn");
     var ring = document.getElementById("ringProgress");
-    if(act){
-      btn.textContent = t("btnStop");
-      btn.className = "big-btn stop";
-      document.getElementById("timerState").textContent = t("timerRunning");
+    var wrap = document.getElementById("mainBtnRow");
+    var stateLabel = document.getElementById("timerState");
+    if(act && !act.paused){
+      wrap.innerHTML = "<button class='big-btn pause' id='pauseBtn' style='flex:1;'>"+t("btnPause")+"</button>"+
+                        "<button class='big-btn stop' id='stopBtn' style='flex:1;'>"+t("btnStop")+"</button>";
+      document.getElementById("pauseBtn").onclick = pauseSession;
+      document.getElementById("stopBtn").onclick = stopSession;
+      stateLabel.textContent = t("timerRunning");
+      stateLabel.classList.remove("paused");
       document.getElementById("metaStart").textContent = fmtTime(act.start);
       document.getElementById("metaEnd").textContent = "—";
       var ms = durationMs(act);
@@ -767,10 +781,25 @@
       var frac = (Math.floor(ms/1000) % 3600) / 3600;
       ring.style.strokeDashoffset = RING_CIRC*(1-frac);
       ring.style.opacity = 1;
+    } else if(act && act.paused){
+      wrap.innerHTML = "<button class='big-btn resume' id='resumeBtn' style='flex:1;'>"+t("btnResume")+"</button>"+
+                        "<button class='big-btn stop' id='stopBtn' style='flex:1;'>"+t("btnStop")+"</button>";
+      document.getElementById("resumeBtn").onclick = resumeSession;
+      document.getElementById("stopBtn").onclick = stopSession;
+      stateLabel.textContent = t("timerPaused");
+      stateLabel.classList.add("paused");
+      document.getElementById("metaStart").textContent = fmtTime(act.start);
+      document.getElementById("metaEnd").textContent = "—";
+      var msP = durationMs(act);
+      document.getElementById("timerDigits").textContent = fmtHM(msP);
+      var fracP = (Math.floor(msP/1000) % 3600) / 3600;
+      ring.style.strokeDashoffset = RING_CIRC*(1-fracP);
+      ring.style.opacity = 0.7; // stays colored/"alive" — just a bit dimmer than fully running
     } else {
-      btn.textContent = t("btnStart");
-      btn.className = "big-btn start";
-      document.getElementById("timerState").textContent = t("timerNotStarted");
+      wrap.innerHTML = "<button class='big-btn start' id='mainBtn' style='flex:1;'>"+t("btnStart")+"</button>";
+      document.getElementById("mainBtn").onclick = startSession;
+      stateLabel.textContent = t("timerNotStarted");
+      stateLabel.classList.remove("paused");
       var last = state.sessions.length ? state.sessions[state.sessions.length-1] : null;
       if(last && last.end && dateKey(new Date(last.start))===todayKey()){
         document.getElementById("metaStart").textContent = fmtTime(last.start);
@@ -820,20 +849,44 @@
   }
 
   // ---------- actions ----------
-  async function toggleTimer(){
+  async function startSession(){
+    state.sessions.push({ id: uid(), start: new Date().toISOString(), end: null, paused:false, pausedAt:null, pausedMs:0, note: {territory:"",partner:"",comment:"",tags:[]}, excluded:false });
+    await saveSessions();
+    renderTimer();
+    toast(t("toastServiceStarted"));
+  }
+  async function pauseSession(){
     var act = activeSession();
-    if(!act){
-      state.sessions.push({ id: uid(), start: new Date().toISOString(), end: null, note: {territory:"",partner:"",comment:"",tags:[]}, excluded:false });
-      await saveSessions();
-      renderTimer();
-      toast(t("toastServiceStarted"));
-    } else {
-      act.end = new Date().toISOString();
-      await saveSessions();
-      renderTimer();
-      toast(t("toastServiceEnded")+fmtDurationShort(durationMs(act)));
-      openNoteModal(act.id, true);
+    if(!act || act.paused) return;
+    act.paused = true;
+    act.pausedAt = new Date().toISOString();
+    await saveSessions();
+    renderTimer();
+  }
+  async function resumeSession(){
+    var act = activeSession();
+    if(!act || !act.paused) return;
+    var gap = new Date() - new Date(act.pausedAt);
+    act.pausedMs = (act.pausedMs||0) + Math.max(0, gap);
+    act.paused = false;
+    act.pausedAt = null;
+    await saveSessions();
+    renderTimer();
+  }
+  async function stopSession(){
+    var act = activeSession();
+    if(!act) return;
+    if(act.paused){
+      var gap = new Date() - new Date(act.pausedAt);
+      act.pausedMs = (act.pausedMs||0) + Math.max(0, gap);
+      act.paused = false;
+      act.pausedAt = null;
     }
+    act.end = new Date().toISOString();
+    await saveSessions();
+    renderTimer();
+    toast(t("toastServiceEnded")+fmtDurationShort(durationMs(act)));
+    openNoteModal(act.id, true);
   }
 
   function openNoteModal(sessionId, afterStop){
@@ -1258,7 +1311,7 @@
   });
 
   // ---------- wiring ----------
-  document.getElementById("mainBtn").onclick = toggleTimer;
+  // mainBtn / pauseBtn / resumeBtn / stopBtn are created dynamically inside renderTimer() and wired there.
   document.getElementById("addNoteBtn").onclick = function(){
     var act = activeSession();
     var target = act || (state.sessions.length ? state.sessions[state.sessions.length-1] : null);
