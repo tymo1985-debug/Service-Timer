@@ -160,6 +160,9 @@
   .seg button{ flex:1; border:none; background:var(--paper-2); padding:8px; font-size:13px; cursor:pointer; color:var(--ink-soft); font-family:inherit; border-right:1px solid var(--line); }
   .seg button:last-child{ border-right:none; }
   .seg button.active{ background:var(--teal); color:#fff; }
+  #setAccentColor{ width:40px; height:36px; border:1px solid var(--line); border-radius:8px; cursor:pointer; padding:0; background:none; flex-shrink:0; }
+  .accent-swatch{ width:26px; height:26px; border-radius:50%; cursor:pointer; border:2px solid transparent; display:inline-block; }
+  .accent-swatch.active{ border-color:var(--ink); }
   .file-row{ display:flex; gap:8px; }
   .file-row button{ flex:1; border:1px solid var(--line); background:var(--paper-2); border-radius:9px; padding:10px; font-size:13px; cursor:pointer; color:var(--ink); font-family:inherit; }
 
@@ -261,6 +264,13 @@
           <button data-v="light" data-i18n="themeLight">Светлая</button>
           <button data-v="dark" data-i18n="themeDark">Тёмная</button>
           <button data-v="auto" data-i18n="themeAuto">Авто</button>
+        </div>
+      </div>
+      <div class="set-row">
+        <label data-i18n="setAccentLabel">Акцентный цвет</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <input type="color" id="setAccentColor" value="#0F6E56">
+          <div class="tag-row" id="accentPresets" style="flex:1; margin-top:0;"></div>
         </div>
       </div>
       <div class="set-row">
@@ -402,7 +412,7 @@
       mergeSelected:"Выбрано записей: 2", mergeBtn:"Объединить",
       confirmDelete:"Удалить эту запись?", confirmRestoreBackup:"Заменить текущие данные содержимым резервной копии?",
       setGoalLabel:"Цель на месяц (часы)", setThemeLabel:"Тема", themeLight:"Светлая", themeDark:"Тёмная", themeAuto:"Авто",
-      setFormatLabel:"Формат времени", format24:"24 ч", format12:"12 ч (AM/PM)", setLangLabel:"Язык",
+      setFormatLabel:"Формат времени", format24:"24 ч", format12:"12 ч (AM/PM)", setLangLabel:"Язык", setAccentLabel:"Акцентный цвет",
       setDataLabel:"Данные", btnExportCsv:"Экспорт CSV", btnBackup:"Резервная копия", btnImportTrigger:"Восстановить из копии",
       backupHint:"Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.",
       noteModalTitleNew:"Заметка о служении", noteModalTitleAfterStop:"Заметка о завершённом служении",
@@ -444,7 +454,7 @@
       mergeSelected:"Обрано записів: 2", mergeBtn:"Об'єднати",
       confirmDelete:"Видалити цей запис?", confirmRestoreBackup:"Замінити поточні дані вмістом резервної копії?",
       setGoalLabel:"Ціль на місяць (години)", setThemeLabel:"Тема", themeLight:"Світла", themeDark:"Темна", themeAuto:"Авто",
-      setFormatLabel:"Формат часу", format24:"24 год", format12:"12 год (AM/PM)", setLangLabel:"Мова",
+      setFormatLabel:"Формат часу", format24:"24 год", format12:"12 год (AM/PM)", setLangLabel:"Мова", setAccentLabel:"Акцентний колір",
       setDataLabel:"Дані", btnExportCsv:"Експорт CSV", btnBackup:"Резервна копія", btnImportTrigger:"Відновити з копії",
       backupHint:"Резервна копія зберігає всі записи та налаштування у файл JSON, який можна відновити пізніше на будь-якому пристрої.",
       noteModalTitleNew:"Нотатка про служіння", noteModalTitleAfterStop:"Нотатка про завершене служіння",
@@ -486,7 +496,7 @@
       mergeSelected:"2 Einträge ausgewählt", mergeBtn:"Zusammenführen",
       confirmDelete:"Diesen Eintrag löschen?", confirmRestoreBackup:"Aktuelle Daten durch das Backup ersetzen?",
       setGoalLabel:"Monatsziel (Stunden)", setThemeLabel:"Design", themeLight:"Hell", themeDark:"Dunkel", themeAuto:"Automatisch",
-      setFormatLabel:"Zeitformat", format24:"24 Std", format12:"12 Std (AM/PM)", setLangLabel:"Sprache",
+      setFormatLabel:"Zeitformat", format24:"24 Std", format12:"12 Std (AM/PM)", setLangLabel:"Sprache", setAccentLabel:"Akzentfarbe",
       setDataLabel:"Daten", btnExportCsv:"CSV exportieren", btnBackup:"Backup erstellen", btnImportTrigger:"Aus Backup wiederherstellen",
       backupHint:"Das Backup speichert alle Einträge und Einstellungen in einer JSON-Datei, die später auf jedem Gerät wiederhergestellt werden kann.",
       noteModalTitleNew:"Notiz zum Dienst", noteModalTitleAfterStop:"Notiz zum abgeschlossenen Dienst",
@@ -528,7 +538,7 @@
       mergeSelected:"2 entries selected", mergeBtn:"Merge",
       confirmDelete:"Delete this entry?", confirmRestoreBackup:"Replace current data with the backup contents?",
       setGoalLabel:"Monthly goal (hours)", setThemeLabel:"Theme", themeLight:"Light", themeDark:"Dark", themeAuto:"Auto",
-      setFormatLabel:"Time format", format24:"24h", format12:"12h (AM/PM)", setLangLabel:"Language",
+      setFormatLabel:"Time format", format24:"24h", format12:"12h (AM/PM)", setLangLabel:"Language", setAccentLabel:"Accent color",
       setDataLabel:"Data", btnExportCsv:"Export CSV", btnBackup:"Create backup", btnImportTrigger:"Restore from backup",
       backupHint:"The backup saves all entries and settings to a JSON file that can be restored later on any device.",
       noteModalTitleNew:"Service note", noteModalTitleAfterStop:"Note for the completed service",
@@ -557,7 +567,7 @@
   function currentTags(){ return t("tags"); }
   var state = {
     sessions: [],
-    settings: { goalHours: 30, theme: "auto", timeFormat: 24, weekStart: 1, lang: "ru" },
+    settings: { goalHours: 30, theme: "auto", timeFormat: 24, weekStart: 1, lang: "ru", accentColor: "#0F6E56" },
     view: "main",
     calMonth: new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0"),
     selectedDay: null,
@@ -640,10 +650,84 @@
 
   // ---------- theme ----------
   function applyTheme(){
-    var t = state.settings.theme;
-    var effective = t;
-    if(t === "auto"){ effective = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light"; }
+    var th = state.settings.theme;
+    var effective = th;
+    if(th === "auto"){ effective = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light"; }
     document.documentElement.setAttribute("data-theme", effective);
+    applyAccent();
+  }
+
+  // ---------- accent color ----------
+  function hexToHsl(hex){
+    hex = hex.replace("#","");
+    if(hex.length===3) hex = hex.split("").map(function(c){return c+c;}).join("");
+    var r = parseInt(hex.substr(0,2),16)/255, g = parseInt(hex.substr(2,2),16)/255, b = parseInt(hex.substr(4,2),16)/255;
+    var max = Math.max(r,g,b), min = Math.min(r,g,b);
+    var h, s, l = (max+min)/2;
+    if(max===min){ h=0; s=0; }
+    else{
+      var d = max-min;
+      s = l>0.5 ? d/(2-max-min) : d/(max+min);
+      switch(max){
+        case r: h = (g-b)/d + (g<b?6:0); break;
+        case g: h = (b-r)/d + 2; break;
+        default: h = (r-g)/d + 4;
+      }
+      h *= 60;
+    }
+    return { h:h, s:s*100, l:l*100 };
+  }
+  function hslToHex(h, s, l){
+    s/=100; l/=100;
+    var c = (1-Math.abs(2*l-1))*s, x = c*(1-Math.abs((h/60)%2-1)), m = l-c/2;
+    var r,g,b;
+    if(h<60){ r=c;g=x;b=0; } else if(h<120){ r=x;g=c;b=0; } else if(h<180){ r=0;g=c;b=x; }
+    else if(h<240){ r=0;g=x;b=c; } else if(h<300){ r=x;g=0;b=c; } else { r=c;g=0;b=x; }
+    var toHex = function(v){ var n = Math.round((v+m)*255); return n.toString(16).padStart(2,"0"); };
+    return "#"+toHex(r)+toHex(g)+toHex(b);
+  }
+  function clampNum(v,min,max){ return Math.max(min, Math.min(max, v)); }
+  var ACCENT_PRESETS = ["#0F6E56","#1D6FBA","#7A4FC9","#C9762E","#B5384B","#C0459A","#3D7A3E","#546070"];
+  function applyAccent(){
+    var hex = (state.settings.accentColor || "#0F6E56");
+    var hsl;
+    try{ hsl = hexToHsl(hex); }catch(e){ hsl = hexToHsl("#0F6E56"); }
+    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    var s = clampNum(hsl.s, 35, 85);
+    var teal, tealLight, tealMid;
+    if(!isDark){
+      teal = hslToHex(hsl.h, s, clampNum(hsl.l, 26, 46));
+      tealLight = hslToHex(hsl.h, clampNum(s,20,55), 93);
+      tealMid = hslToHex(hsl.h, s, 62);
+    } else {
+      teal = hslToHex(hsl.h, s, clampNum(hsl.l, 55, 72));
+      tealLight = hslToHex(hsl.h, clampNum(s,20,50), 20);
+      tealMid = hslToHex(hsl.h, clampNum(s,25,60), 40);
+    }
+    document.documentElement.style.setProperty("--teal", teal);
+    document.documentElement.style.setProperty("--teal-light", tealLight);
+    document.documentElement.style.setProperty("--teal-mid", tealMid);
+    var colorInput = document.getElementById("setAccentColor");
+    if(colorInput) colorInput.value = hex;
+    renderAccentPresets();
+  }
+  function renderAccentPresets(){
+    var row = document.getElementById("accentPresets");
+    if(!row) return;
+    row.innerHTML = "";
+    var current = (state.settings.accentColor||"").toLowerCase();
+    ACCENT_PRESETS.forEach(function(hex){
+      var el = document.createElement("div");
+      el.className = "accent-swatch"+(current===hex.toLowerCase()?" active":"");
+      el.style.background = hex;
+      el.title = hex;
+      el.onclick = function(){
+        state.settings.accentColor = hex;
+        saveSettings();
+        applyAccent();
+      };
+      row.appendChild(el);
+    });
   }
 
   // ---------- navigation ----------
@@ -1088,6 +1172,8 @@
     document.querySelectorAll("#segTheme button").forEach(function(b){ b.classList.toggle("active", b.dataset.v===state.settings.theme); });
     document.querySelectorAll("#segFormat button").forEach(function(b){ b.classList.toggle("active", b.dataset.v==String(state.settings.timeFormat)); });
     document.getElementById("setLang").value = lang();
+    document.getElementById("setAccentColor").value = state.settings.accentColor || "#0F6E56";
+    renderAccentPresets();
   }
   document.getElementById("setGoal").addEventListener("change", function(e){
     var v = parseInt(e.target.value,10);
@@ -1103,6 +1189,11 @@
     if(e.target.tagName!=="BUTTON") return;
     state.settings.timeFormat = parseInt(e.target.dataset.v,10);
     saveSettings(); renderSettings(); renderTimer();
+  });
+  document.getElementById("setAccentColor").addEventListener("input", function(e){
+    state.settings.accentColor = e.target.value;
+    saveSettings();
+    applyAccent();
   });
   document.getElementById("setLang").addEventListener("change", function(e){
     state.settings.lang = e.target.value;
