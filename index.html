@@ -236,6 +236,7 @@
       <div class="goal-card">
         <div class="goal-top"><span data-i18n="goalLabel">Цель на месяц</span><b id="goalText">0 / 30 ч</b></div>
         <div class="goal-bar"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
+        <div class="goal-top" style="margin:8px 0 0;"><span id="goalRemainingLabel"></span><b id="goalRemaining">—</b></div>
       </div>
     </section>
 
@@ -410,7 +411,7 @@
       btnStart:"▶ Начать служение", btnStop:"⏹ Закончить", btnPause:"⏸ Пауза", btnResume:"▶ Продолжить",
       btnAddNote:"+ Добавить заметку", btnAddManual:"+ Добавить запись вручную",
       statToday:"Сегодня", statMonth:"Этот месяц", statLastMonth:"Прошлый месяц",
-      goalLabel:"Цель на месяц", sectionAllEntries:"Все записи",
+      goalLabel:"Цель на месяц", goalRemainingLabel:"Осталось", goalSurplusLabel:"Сверх нормы", sectionAllEntries:"Все записи",
       emptyHistory:"Записей пока нет", emptyDayDetail:"Нет записей за этот день",
       histSelect:"выбрать", actEdit:"Изменить", actNote:"Заметка", actExcludeOn:"Не учитывать", actExcludeOff:"Учитывать", actSplit:"Разделить", actDelete:"Удалить",
       excludedNote:"Не учитывается в итоге месяца",
@@ -452,7 +453,7 @@
       btnStart:"▶ Почати служіння", btnStop:"⏹ Закінчити", btnPause:"⏸ Пауза", btnResume:"▶ Продовжити",
       btnAddNote:"+ Додати нотатку", btnAddManual:"+ Додати запис вручну",
       statToday:"Сьогодні", statMonth:"Цей місяць", statLastMonth:"Минулий місяць",
-      goalLabel:"Ціль на місяць", sectionAllEntries:"Усі записи",
+      goalLabel:"Ціль на місяць", goalRemainingLabel:"Залишилось", goalSurplusLabel:"Понад норму", sectionAllEntries:"Усі записи",
       emptyHistory:"Записів поки немає", emptyDayDetail:"Немає записів за цей день",
       histSelect:"вибрати", actEdit:"Змінити", actNote:"Нотатка", actExcludeOn:"Не враховувати", actExcludeOff:"Враховувати", actSplit:"Розділити", actDelete:"Видалити",
       excludedNote:"Не враховується в підсумку місяця",
@@ -494,7 +495,7 @@
       btnStart:"▶ Dienst beginnen", btnStop:"⏹ Beenden", btnPause:"⏸ Pause", btnResume:"▶ Fortsetzen",
       btnAddNote:"+ Notiz hinzufügen", btnAddManual:"+ Eintrag manuell hinzufügen",
       statToday:"Heute", statMonth:"Dieser Monat", statLastMonth:"Letzter Monat",
-      goalLabel:"Monatsziel", sectionAllEntries:"Alle Einträge",
+      goalLabel:"Monatsziel", goalRemainingLabel:"Verbleibend", goalSurplusLabel:"Über dem Ziel", sectionAllEntries:"Alle Einträge",
       emptyHistory:"Noch keine Einträge", emptyDayDetail:"Keine Einträge an diesem Tag",
       histSelect:"auswählen", actEdit:"Bearbeiten", actNote:"Notiz", actExcludeOn:"Nicht zählen", actExcludeOff:"Zählen", actSplit:"Teilen", actDelete:"Löschen",
       excludedNote:"Wird nicht in die Monatssumme gezählt",
@@ -536,7 +537,7 @@
       btnStart:"▶ Start service", btnStop:"⏹ End", btnPause:"⏸ Pause", btnResume:"▶ Resume",
       btnAddNote:"+ Add note", btnAddManual:"+ Add manual entry",
       statToday:"Today", statMonth:"This month", statLastMonth:"Last month",
-      goalLabel:"Monthly goal", sectionAllEntries:"All entries",
+      goalLabel:"Monthly goal", goalRemainingLabel:"Remaining", goalSurplusLabel:"Over goal", sectionAllEntries:"All entries",
       emptyHistory:"No entries yet", emptyDayDetail:"No entries for this day",
       histSelect:"select", actEdit:"Edit", actNote:"Note", actExcludeOn:"Exclude", actExcludeOff:"Include", actSplit:"Split", actDelete:"Delete",
       excludedNote:"Not counted in the monthly total",
@@ -840,7 +841,19 @@
     document.getElementById("goalText").textContent = (sumMonth/3600000).toFixed(1)+" / "+state.settings.goalHours+t("durH").trim();
     var fill = document.getElementById("goalFill");
     fill.style.width = pct+"%";
-    fill.classList.toggle("over", sumMonth >= goalMs);
+    var reached = sumMonth >= goalMs;
+    fill.classList.toggle("over", reached);
+    var remainLabel = document.getElementById("goalRemainingLabel");
+    var remainVal = document.getElementById("goalRemaining");
+    if(reached){
+      remainLabel.textContent = t("goalSurplusLabel");
+      remainVal.textContent = "+"+fmtDurationShort(sumMonth-goalMs);
+      remainVal.style.color = "var(--teal)";
+    } else {
+      remainLabel.textContent = t("goalRemainingLabel");
+      remainVal.textContent = fmtDurationShort(goalMs-sumMonth);
+      remainVal.style.color = "";
+    }
   }
 
   function startTicking(){
