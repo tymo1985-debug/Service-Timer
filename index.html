@@ -117,6 +117,9 @@
   .cal-nav{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
   .cal-nav button{ border:1px solid var(--line); background:var(--paper); border-radius:9px; width:34px; height:34px; font-size:16px; cursor:pointer; color:var(--ink); }
   .cal-nav .month-label{ font-weight:600; font-size:15px; }
+  .month-total{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--teal-light); border:1px solid var(--teal-mid); border-radius:12px; padding:11px 14px; margin-bottom:12px; }
+  .month-total .mt-label{ font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.07em; }
+  .month-total .mt-value{ font-size:18px; font-weight:600; color:var(--teal-deep); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
   .cal-dow{ font-size:10px; color:var(--ink-faint); text-align:center; padding-bottom:4px; }
   .cal-day{ aspect-ratio:1; border-radius:10px; border:1px solid var(--line); background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; cursor:pointer; position:relative; padding:2px; }
@@ -246,6 +249,10 @@
         <button id="calPrev">‹</button>
         <div class="month-label" id="calMonthLabel">—</div>
         <button id="calNext">›</button>
+      </div>
+      <div class="month-total">
+        <span class="mt-label" id="calTotalLabel">Всего за месяц</span>
+        <span class="mt-value" id="calTotalValue">0 ч 0 мин</span>
       </div>
       <div class="cal-grid" id="calGrid"></div>
       <div id="dayDetail"></div>
@@ -411,7 +418,7 @@
       btnStart:"▶ Начать служение", btnStop:"⏹ Закончить", btnPause:"⏸ Пауза", btnResume:"▶ Продолжить",
       btnAddNote:"+ Добавить заметку", btnAddManual:"+ Добавить запись вручную",
       statToday:"Сегодня", statMonth:"Этот месяц", statLastMonth:"Прошлый месяц",
-      goalLabel:"Цель на месяц", goalRemainingLabel:"Осталось", goalSurplusLabel:"Сверх нормы", sectionAllEntries:"Все записи",
+      goalLabel:"Цель на месяц", goalRemainingLabel:"Осталось", goalSurplusLabel:"Сверх нормы", calMonthTotal:"Всего за месяц", sectionAllEntries:"Все записи",
       emptyHistory:"Записей пока нет", emptyDayDetail:"Нет записей за этот день",
       histSelect:"выбрать", actEdit:"Изменить", actNote:"Заметка", actExcludeOn:"Не учитывать", actExcludeOff:"Учитывать", actSplit:"Разделить", actDelete:"Удалить",
       excludedNote:"Не учитывается в итоге месяца",
@@ -453,7 +460,7 @@
       btnStart:"▶ Почати служіння", btnStop:"⏹ Закінчити", btnPause:"⏸ Пауза", btnResume:"▶ Продовжити",
       btnAddNote:"+ Додати нотатку", btnAddManual:"+ Додати запис вручну",
       statToday:"Сьогодні", statMonth:"Цей місяць", statLastMonth:"Минулий місяць",
-      goalLabel:"Ціль на місяць", goalRemainingLabel:"Залишилось", goalSurplusLabel:"Понад норму", sectionAllEntries:"Усі записи",
+      goalLabel:"Ціль на місяць", goalRemainingLabel:"Залишилось", goalSurplusLabel:"Понад норму", calMonthTotal:"Усього за місяць", sectionAllEntries:"Усі записи",
       emptyHistory:"Записів поки немає", emptyDayDetail:"Немає записів за цей день",
       histSelect:"вибрати", actEdit:"Змінити", actNote:"Нотатка", actExcludeOn:"Не враховувати", actExcludeOff:"Враховувати", actSplit:"Розділити", actDelete:"Видалити",
       excludedNote:"Не враховується в підсумку місяця",
@@ -495,7 +502,7 @@
       btnStart:"▶ Dienst beginnen", btnStop:"⏹ Beenden", btnPause:"⏸ Pause", btnResume:"▶ Fortsetzen",
       btnAddNote:"+ Notiz hinzufügen", btnAddManual:"+ Eintrag manuell hinzufügen",
       statToday:"Heute", statMonth:"Dieser Monat", statLastMonth:"Letzter Monat",
-      goalLabel:"Monatsziel", goalRemainingLabel:"Verbleibend", goalSurplusLabel:"Über dem Ziel", sectionAllEntries:"Alle Einträge",
+      goalLabel:"Monatsziel", goalRemainingLabel:"Verbleibend", goalSurplusLabel:"Über dem Ziel", calMonthTotal:"Monatssumme", sectionAllEntries:"Alle Einträge",
       emptyHistory:"Noch keine Einträge", emptyDayDetail:"Keine Einträge an diesem Tag",
       histSelect:"auswählen", actEdit:"Bearbeiten", actNote:"Notiz", actExcludeOn:"Nicht zählen", actExcludeOff:"Zählen", actSplit:"Teilen", actDelete:"Löschen",
       excludedNote:"Wird nicht in die Monatssumme gezählt",
@@ -537,7 +544,7 @@
       btnStart:"▶ Start service", btnStop:"⏹ End", btnPause:"⏸ Pause", btnResume:"▶ Resume",
       btnAddNote:"+ Add note", btnAddManual:"+ Add manual entry",
       statToday:"Today", statMonth:"This month", statLastMonth:"Last month",
-      goalLabel:"Monthly goal", goalRemainingLabel:"Remaining", goalSurplusLabel:"Over goal", sectionAllEntries:"All entries",
+      goalLabel:"Monthly goal", goalRemainingLabel:"Remaining", goalSurplusLabel:"Over goal", calMonthTotal:"Month total", sectionAllEntries:"All entries",
       emptyHistory:"No entries yet", emptyDayDetail:"No entries for this day",
       histSelect:"select", actEdit:"Edit", actNote:"Note", actExcludeOn:"Exclude", actExcludeOff:"Include", actSplit:"Split", actDelete:"Delete",
       excludedNote:"Not counted in the monthly total",
@@ -898,6 +905,7 @@
     act.end = new Date().toISOString();
     await saveSessions();
     renderTimer();
+    refreshAll();
     toast(t("toastServiceEnded")+fmtDurationShort(durationMs(act)));
     openNoteModal(act.id, true);
   }
@@ -940,7 +948,7 @@
       };
       await saveSessions();
       toast(t("toastNoteSaved"));
-      renderHistory();
+      refreshAll();
     }
     closeNoteModal();
   }
@@ -1041,8 +1049,7 @@
     toast(t("toastManualAdded")+fmtDurationShort(end-start));
     closeManualModal();
     renderTimer();
-    if(state.view === "history") renderHistory();
-    if(state.view === "calendar") renderCalendar();
+    refreshAll();
   }
 
   // ---------- calendar ----------
@@ -1060,12 +1067,17 @@
     document.getElementById("calMonthLabel").textContent = monthNames[month]+" "+year;
 
     var byDay = {};
+    var monthTotal = 0;
     state.sessions.forEach(function(s){
       if(s.excluded) return;
       var dk = dateKey(new Date(s.start));
       if(dk.slice(0,7) !== state.calMonth) return;
-      byDay[dk] = (byDay[dk]||0) + durationMs(s);
+      var ms = durationMs(s);
+      byDay[dk] = (byDay[dk]||0) + ms;
+      monthTotal += ms;
     });
+    document.getElementById("calTotalLabel").textContent = t("calMonthTotal");
+    document.getElementById("calTotalValue").textContent = fmtDurationShort(monthTotal);
 
     var grid = document.getElementById("calGrid");
     grid.innerHTML = "";
@@ -1167,7 +1179,7 @@
     state.sessions.push({ id: uid(), start:newStart, end:newEnd, note:mergedNote, excluded:false });
     await saveSessions();
     toast(t("toastMerged"));
-    renderHistory();
+    refreshAll();
   }
   async function splitSession(id){
     var s = state.sessions.find(function(x){ return x.id===id; });
@@ -1178,8 +1190,15 @@
     state.sessions.push(second);
     await saveSessions();
     toast(t("toastSplit"));
+    refreshAll();
+  }
+  // Single place to re-sync every view after any data change (add/edit/delete/merge/split).
+  function refreshAll(){
+    renderStats();
+    renderCalendar();
     renderHistory();
   }
+
   function openEdit(id){
     var row = document.querySelector("[data-act='edit'][data-id='"+id+"']").closest(".hist-row");
     var slot = row.querySelector(".edit-slot");
@@ -1206,7 +1225,7 @@
       }
       await saveSessions();
       toast(t("toastEditSaved"));
-      renderHistory();
+      refreshAll();
     };
     document.getElementById("ef-cancel").onclick = function(){ slot.innerHTML = ""; };
   }
@@ -1219,13 +1238,13 @@
     if(el.dataset.act === "delete"){
       if(confirm(t("confirmDelete"))){
         state.sessions = state.sessions.filter(function(s){ return s.id!==el.dataset.id; });
-        saveSessions(); renderHistory();
+        saveSessions(); refreshAll();
       }
     }
     if(el.dataset.act === "exclude"){
       var s = state.sessions.find(function(x){ return x.id===el.dataset.id; });
       s.excluded = !s.excluded;
-      saveSessions(); renderHistory();
+      saveSessions(); refreshAll();
     }
   });
   document.getElementById("historyList").addEventListener("change", function(ev){
