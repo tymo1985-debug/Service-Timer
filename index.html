@@ -212,6 +212,18 @@
   .empty-note{ text-align:center; color:var(--ink-faint); font-size:13px; padding:30px 0; }
   .toast{ position:fixed; bottom:96px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); font-size:13px; padding:9px 16px; border-radius:10px; opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:60; }
   .toast.show{ opacity:1; }
+  .update-banner{ position:fixed; left:12px; right:12px; bottom:84px; max-width:456px; margin:0 auto; background:var(--paper); border:1px solid var(--teal-mid); border-radius:16px; box-shadow:0 6px 24px rgba(20,30,26,0.18); padding:14px 16px 12px; z-index:55; opacity:0; transform:translateY(14px); pointer-events:none; transition:opacity .28s ease, transform .28s ease; }
+  .update-banner.show{ opacity:1; transform:translateY(0); pointer-events:auto; }
+  .update-banner .ub-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .update-banner .ub-title{ font-size:14px; font-weight:600; }
+  .update-banner .ub-close{ border:none; background:transparent; color:var(--ink-faint); font-size:20px; line-height:1; cursor:pointer; padding:0 2px; font-family:inherit; }
+  .update-banner .ub-version{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .update-banner .ub-notes{ margin:8px 0 0; padding-left:18px; font-size:12px; color:var(--ink-soft); line-height:1.55; max-height:88px; overflow-y:auto; }
+  .update-banner .ub-notes:empty{ display:none; }
+  .update-banner .ub-actions{ display:flex; gap:8px; margin-top:12px; }
+  .update-banner .ub-actions button{ flex:1; border-radius:10px; padding:10px; font-size:13px; font-family:inherit; cursor:pointer; }
+  .update-banner .ub-later{ border:1px solid var(--line); background:var(--paper-2); color:var(--ink-soft); }
+  .update-banner .ub-update{ border:none; background:var(--teal); color:#fff; font-weight:600; }
 </style>
 </head>
 <body>
@@ -445,6 +457,19 @@
   </div>
 </div>
 
+<div class="update-banner" id="updateBanner">
+  <div class="ub-top">
+    <span class="ub-title" id="ubTitle">Доступно обновление</span>
+    <button class="ub-close" id="ubClose" aria-label="×">×</button>
+  </div>
+  <div class="ub-version" id="ubVersion"></div>
+  <ul class="ub-notes" id="ubNotes"></ul>
+  <div class="ub-actions">
+    <button class="ub-later" id="ubLater">Позже</button>
+    <button class="ub-update" id="ubUpdate">Обновить</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -477,7 +502,7 @@
       setUpdateLabel:"Обновления приложения", btnCheckUpdates:"Проверить обновления",
       currentVersionLabel:"Текущая версия", lastUpdateLabel:"Последнее обновление", neverUpdated:"—",
       checkingUpdates:"Проверка обновлений…", upToDate:"У вас установлена последняя версия приложения.",
-      updateModalTitle:"Доступно обновление", updateAvailableText:"Доступна новая версия",
+      updateModalTitle:"Доступно обновление", updateAvailableText:"Доступна новая версия", btnLater:"Позже",
       releaseNotesLabel:"Что нового", btnUpdateNow:"Обновить", updatingNow:"Обновление…",
       updateSuccess:"Приложение успешно обновлено до последней версии.",
       updateErrorOffline:"Нет подключения к интернету. Проверьте соединение и попробуйте снова.",
@@ -529,7 +554,7 @@
       setUpdateLabel:"Оновлення додатка", btnCheckUpdates:"Перевірити оновлення",
       currentVersionLabel:"Поточна версія", lastUpdateLabel:"Останнє оновлення", neverUpdated:"—",
       checkingUpdates:"Перевірка оновлень…", upToDate:"У вас встановлено останню версію додатка.",
-      updateModalTitle:"Доступне оновлення", updateAvailableText:"Доступна нова версія",
+      updateModalTitle:"Доступне оновлення", updateAvailableText:"Доступна нова версія", btnLater:"Пізніше",
       releaseNotesLabel:"Що нового", btnUpdateNow:"Оновити", updatingNow:"Оновлення…",
       updateSuccess:"Додаток успішно оновлено до останньої версії.",
       updateErrorOffline:"Немає підключення до інтернету. Перевірте з'єднання та спробуйте знову.",
@@ -581,7 +606,7 @@
       setUpdateLabel:"App-Updates", btnCheckUpdates:"Nach Updates suchen",
       currentVersionLabel:"Aktuelle Version", lastUpdateLabel:"Letztes Update", neverUpdated:"—",
       checkingUpdates:"Suche nach Updates…", upToDate:"Sie haben die neueste Version der App installiert.",
-      updateModalTitle:"Update verfügbar", updateAvailableText:"Eine neue Version ist verfügbar",
+      updateModalTitle:"Update verfügbar", updateAvailableText:"Eine neue Version ist verfügbar", btnLater:"Später",
       releaseNotesLabel:"Neuerungen", btnUpdateNow:"Aktualisieren", updatingNow:"Wird aktualisiert…",
       updateSuccess:"Die App wurde erfolgreich auf die neueste Version aktualisiert.",
       updateErrorOffline:"Keine Internetverbindung. Bitte Verbindung prüfen und erneut versuchen.",
@@ -633,7 +658,7 @@
       setUpdateLabel:"App updates", btnCheckUpdates:"Check for updates",
       currentVersionLabel:"Current version", lastUpdateLabel:"Last update", neverUpdated:"—",
       checkingUpdates:"Checking for updates…", upToDate:"You have the latest version of the app installed.",
-      updateModalTitle:"Update available", updateAvailableText:"A new version is available",
+      updateModalTitle:"Update available", updateAvailableText:"A new version is available", btnLater:"Later",
       releaseNotesLabel:"What's new", btnUpdateNow:"Update", updatingNow:"Updating…",
       updateSuccess:"The app was successfully updated to the latest version.",
       updateErrorOffline:"No internet connection. Please check your connection and try again.",
@@ -1439,7 +1464,7 @@
   // ---------- app version & updates ----------
   // APP_VERSION is baked into this file at build/deploy time.
   // version.json is published alongside it and is the source of truth for "what's live".
-  var APP_VERSION = "1.1.0";
+  var APP_VERSION = "1.2.0";
   var LAST_UPDATE_KEY = "ministry-last-update";
   var PENDING_UPDATE_KEY = "ministry-pending-update";
 
@@ -1485,6 +1510,29 @@
   }
 
   var pendingUpdateInfo = null;
+  var AUTO_CHECK_KEY = "ministry-update-lastcheck";
+  var SNOOZE_KEY = "ministry-update-snooze";
+  var AUTO_CHECK_INTERVAL = 24*60*60*1000;   // check at most once a day
+  var SNOOZE_DURATION = 24*60*60*1000;       // "Позже" hides the banner for a day
+
+  // Single network call shared by manual and background checks.
+  async function fetchVersionInfo(){
+    // Cache-busting query + no-store so we always hit the deploy, never the SW/HTTP cache.
+    var res = await fetch("version.json?ts="+Date.now(), { cache: "no-store" });
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    var info = await res.json();
+    if(!info || !info.version) throw new Error("malformed");
+    return info;
+  }
+
+  function isSnoozed(version){
+    var raw = safeGetLocal(SNOOZE_KEY);
+    if(!raw) return false;
+    try{
+      var s = JSON.parse(raw);
+      return s.version === version && Date.now() < s.until;
+    }catch(e){ return false; }
+  }
 
   async function checkForUpdates(){
     var btn = document.getElementById("btnCheckUpdates");
@@ -1492,14 +1540,12 @@
     btn.disabled = true;
     setUpdateStatus(t("checkingUpdates"), false);
     try{
-      // Cache-busting query + no-store so we always hit the deploy, never the SW/HTTP cache.
-      var res = await fetch("version.json?ts="+Date.now(), { cache: "no-store" });
-      if(!res.ok) throw new Error("HTTP "+res.status);
-      var info = await res.json();
-      if(!info || !info.version) throw new Error("malformed");
+      var info = await fetchVersionInfo();
+      safeSetLocal(AUTO_CHECK_KEY, String(Date.now()));
       if(isNewerVersion(info.version, APP_VERSION)){
         pendingUpdateInfo = info;
         setUpdateStatus("", false);
+        hideUpdateBanner();
         openUpdateModal(info);
       } else {
         setUpdateStatus(t("upToDate"), false);
@@ -1509,6 +1555,66 @@
     }finally{
       btn.disabled = false;
     }
+  }
+
+  // Background check: never blocks startup, never shows errors, silently skips when offline.
+  async function backgroundCheckForUpdates(force){
+    if(!navigator.onLine) return;
+    if(!force){
+      var last = parseInt(safeGetLocal(AUTO_CHECK_KEY), 10) || 0;
+      if(Date.now() - last < AUTO_CHECK_INTERVAL) return;
+    }
+    try{
+      var info = await fetchVersionInfo();
+      safeSetLocal(AUTO_CHECK_KEY, String(Date.now()));
+      if(!isNewerVersion(info.version, APP_VERSION)) return;
+      if(isSnoozed(info.version)) return;
+      pendingUpdateInfo = info;
+      showUpdateBanner(info);
+    }catch(err){
+      // Network hiccup, offline mid-request, server down — stay quiet, try again later.
+    }
+  }
+
+  function showUpdateBanner(info){
+    document.getElementById("ubTitle").textContent = t("updateModalTitle");
+    document.getElementById("ubVersion").textContent = t("updateAvailableText")+": "+info.version;
+    var ul = document.getElementById("ubNotes");
+    ul.innerHTML = "";
+    var notes = info.releaseNotes;
+    if(notes && !Array.isArray(notes)) notes = [String(notes)];
+    if(notes && notes.length){
+      notes.forEach(function(n){
+        var li = document.createElement("li");
+        li.textContent = String(n);
+        ul.appendChild(li);
+      });
+    }
+    document.getElementById("ubLater").textContent = t("btnLater");
+    document.getElementById("ubUpdate").textContent = t("btnUpdateNow");
+    document.getElementById("updateBanner").classList.add("show");
+  }
+  function hideUpdateBanner(){
+    document.getElementById("updateBanner").classList.remove("show");
+  }
+  // "Позже" / closing: remind again after 24h or on a later launch.
+  function snoozeUpdate(){
+    if(pendingUpdateInfo){
+      safeSetLocal(SNOOZE_KEY, JSON.stringify({ version: pendingUpdateInfo.version, until: Date.now()+SNOOZE_DURATION }));
+    }
+    hideUpdateBanner();
+  }
+
+  function startAutoUpdateChecks(){
+    // Startup check runs after the UI is interactive so it never slows the app down.
+    setTimeout(function(){ backgroundCheckForUpdates(false); }, 3000);
+    // While the app stays open, re-evaluate hourly; the daily interval gate does the real filtering.
+    setInterval(function(){ backgroundCheckForUpdates(false); }, 60*60*1000);
+    // Coming back online or refocusing the app is a good moment to retry a check that was due.
+    window.addEventListener("online", function(){ backgroundCheckForUpdates(false); });
+    document.addEventListener("visibilitychange", function(){
+      if(!document.hidden) backgroundCheckForUpdates(false);
+    });
   }
 
   function openUpdateModal(info){
@@ -1540,10 +1646,14 @@
   async function performUpdate(){
     if(!pendingUpdateInfo) return;
     var btn = document.getElementById("updateConfirm");
+    var bannerBtn = document.getElementById("ubUpdate");
     btn.disabled = true;
     btn.textContent = t("updatingNow");
+    bannerBtn.disabled = true;
+    bannerBtn.textContent = t("updatingNow");
     try{
       safeSetLocal(PENDING_UPDATE_KEY, JSON.stringify({ version: pendingUpdateInfo.version }));
+      safeRemoveLocal(SNOOZE_KEY);   // updating clears any "remind me later" state
       if("serviceWorker" in navigator){
         var regs = await navigator.serviceWorker.getRegistrations();
         for(var i=0;i<regs.length;i++){ await regs[i].unregister(); }
@@ -1552,14 +1662,20 @@
         var names = await caches.keys();
         for(var j=0;j<names.length;j++){ await caches.delete(names[j]); }
       }
+      // downloadUrl lets version.json point somewhere else; otherwise reload this same app.
+      var target = pendingUpdateInfo.downloadUrl || location.pathname;
       // Cache-busting query guarantees a fresh index.html rather than an HTTP-cached copy.
-      location.replace(location.pathname+"?v="+Date.now());
+      location.replace(target + (target.indexOf("?")>=0 ? "&" : "?") + "v=" + Date.now());
     }catch(err){
       safeRemoveLocal(PENDING_UPDATE_KEY);
       btn.disabled = false;
       btn.textContent = t("btnUpdateNow");
+      bannerBtn.disabled = false;
+      bannerBtn.textContent = t("btnUpdateNow");
       closeUpdateModal();
+      hideUpdateBanner();
       setUpdateStatus(t("updateErrorFailed"), true);
+      toast(t("updateErrorFailed"));
     }
   }
 
@@ -1572,6 +1688,7 @@
     try{ expected = JSON.parse(raw).version; }catch(e){}
     if(expected && expected === APP_VERSION){
       safeSetLocal(LAST_UPDATE_KEY, new Date().toISOString());
+      safeRemoveLocal(SNOOZE_KEY);   // this version is installed — never nag about it again
       setTimeout(function(){ toast(t("updateSuccess")); }, 400);
     } else if(expected){
       setTimeout(function(){ toast(t("updateErrorFailed")); }, 400);
@@ -1684,6 +1801,9 @@
   document.getElementById("toggleAllMonths").onclick = toggleAllMonths;
   document.getElementById("btnCheckUpdates").onclick = checkForUpdates;
   document.getElementById("updateCancel").onclick = closeUpdateModal;
+  document.getElementById("ubLater").onclick = snoozeUpdate;
+  document.getElementById("ubClose").onclick = snoozeUpdate;
+  document.getElementById("ubUpdate").onclick = performUpdate;
   document.getElementById("updateConfirm").onclick = performUpdate;
   document.getElementById("manCancel").onclick = closeManualModal;
   document.getElementById("manSave").onclick = saveManualEntry;
@@ -1706,6 +1826,7 @@
     renderTimer();
     startTicking();
     setView("main");
+    startAutoUpdateChecks();
   })();
 
   if("serviceWorker" in navigator){
