@@ -135,6 +135,19 @@
   .day-detail .entry:last-child{ border-bottom:none; }
 
   /* history */
+  .hist-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:22px 0 8px; }
+  .toggle-all{ border:1px solid var(--line); background:var(--paper); color:var(--ink-soft); border-radius:9px; padding:7px 12px; font-size:12px; font-family:inherit; cursor:pointer; white-space:nowrap; }
+  .toggle-all:active{ background:var(--paper-2); }
+  .month-group{ margin-bottom:8px; }
+  .month-head{ width:100%; display:flex; align-items:center; gap:10px; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:12px 14px; cursor:pointer; font-family:inherit; text-align:left; color:var(--ink); }
+  .month-head:active{ background:var(--paper-2); }
+  .month-head .chev{ font-size:12px; color:var(--ink-faint); transition:transform .25s ease; flex:none; }
+  .month-group.open .month-head .chev{ transform:rotate(90deg); }
+  .month-head .mh-name{ font-size:14px; font-weight:600; flex:1; }
+  .month-head .mh-count{ font-size:11px; color:var(--ink-faint); white-space:nowrap; }
+  .month-head .mh-hours{ font-size:13px; font-weight:600; color:var(--teal); white-space:nowrap; }
+  .month-body{ overflow:hidden; max-height:0; transition:max-height .3s ease; }
+  .month-body-inner{ padding-top:8px; }
   .hist-row{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:12px 14px; margin-bottom:8px; }
   .hist-top{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
   .hist-top .when{ font-size:13px; }
@@ -263,7 +276,10 @@
 
     <!-- HISTORY VIEW -->
     <section class="view" id="view-history">
-      <div class="section-title" data-i18n="sectionAllEntries">Все записи</div>
+      <div class="hist-head">
+        <div class="section-title" style="margin:0;" data-i18n="sectionAllEntries">Все записи</div>
+        <button id="toggleAllMonths" class="toggle-all"></button>
+      </div>
       <div id="mergeBar"></div>
       <div id="historyList"></div>
     </section>
@@ -450,6 +466,7 @@
       statToday:"Сегодня", statMonth:"Этот месяц", statLastMonth:"Прошлый месяц",
       goalLabel:"Цель на месяц", goalRemainingLabel:"Осталось", goalSurplusLabel:"Сверх нормы", calMonthTotal:"Всего за месяц", sectionAllEntries:"Все записи",
       emptyHistory:"Записей пока нет", emptyDayDetail:"Нет записей за этот день",
+      entriesShort:"зап.", expandAllMonths:"Развернуть все месяцы", collapseAllMonths:"Свернуть все месяцы",
       histSelect:"выбрать", actEdit:"Изменить", actNote:"Заметка", actExcludeOn:"Не учитывать", actExcludeOff:"Учитывать", actSplit:"Разделить", actDelete:"Удалить",
       excludedNote:"Не учитывается в итоге месяца",
       mergeSelected:"Выбрано записей: 2", mergeBtn:"Объединить",
@@ -501,6 +518,7 @@
       statToday:"Сьогодні", statMonth:"Цей місяць", statLastMonth:"Минулий місяць",
       goalLabel:"Ціль на місяць", goalRemainingLabel:"Залишилось", goalSurplusLabel:"Понад норму", calMonthTotal:"Усього за місяць", sectionAllEntries:"Усі записи",
       emptyHistory:"Записів поки немає", emptyDayDetail:"Немає записів за цей день",
+      entriesShort:"зап.", expandAllMonths:"Розгорнути всі місяці", collapseAllMonths:"Згорнути всі місяці",
       histSelect:"вибрати", actEdit:"Змінити", actNote:"Нотатка", actExcludeOn:"Не враховувати", actExcludeOff:"Враховувати", actSplit:"Розділити", actDelete:"Видалити",
       excludedNote:"Не враховується в підсумку місяця",
       mergeSelected:"Обрано записів: 2", mergeBtn:"Об'єднати",
@@ -552,6 +570,7 @@
       statToday:"Heute", statMonth:"Dieser Monat", statLastMonth:"Letzter Monat",
       goalLabel:"Monatsziel", goalRemainingLabel:"Verbleibend", goalSurplusLabel:"Über dem Ziel", calMonthTotal:"Monatssumme", sectionAllEntries:"Alle Einträge",
       emptyHistory:"Noch keine Einträge", emptyDayDetail:"Keine Einträge an diesem Tag",
+      entriesShort:"Einträge", expandAllMonths:"Alle Monate ausklappen", collapseAllMonths:"Alle Monate einklappen",
       histSelect:"auswählen", actEdit:"Bearbeiten", actNote:"Notiz", actExcludeOn:"Nicht zählen", actExcludeOff:"Zählen", actSplit:"Teilen", actDelete:"Löschen",
       excludedNote:"Wird nicht in die Monatssumme gezählt",
       mergeSelected:"2 Einträge ausgewählt", mergeBtn:"Zusammenführen",
@@ -603,6 +622,7 @@
       statToday:"Today", statMonth:"This month", statLastMonth:"Last month",
       goalLabel:"Monthly goal", goalRemainingLabel:"Remaining", goalSurplusLabel:"Over goal", calMonthTotal:"Month total", sectionAllEntries:"All entries",
       emptyHistory:"No entries yet", emptyDayDetail:"No entries for this day",
+      entriesShort:"entries", expandAllMonths:"Expand all months", collapseAllMonths:"Collapse all months",
       histSelect:"select", actEdit:"Edit", actNote:"Note", actExcludeOn:"Exclude", actExcludeOff:"Include", actSplit:"Split", actDelete:"Delete",
       excludedNote:"Not counted in the monthly total",
       mergeSelected:"2 entries selected", mergeBtn:"Merge",
@@ -653,7 +673,8 @@
     editingNoteFor: null,
     activeTags: [],
     tickHandle: null,
-    selectedForMerge: []
+    selectedForMerge: [],
+    openMonths: {}   // { "2026-08": true } — expanded state, kept for the app session
   };
 
   function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -1183,40 +1204,138 @@
   }
 
   // ---------- history ----------
+  // Builds the HTML for one entry row. Shared by initial render and lazy month expansion.
+  function historyRowHtml(s){
+    var d = new Date(s.start);
+    var dateLabel = pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear();
+    var noteBits = [];
+    if(s.note){
+      if(s.note.territory) noteBits.push(s.note.territory);
+      if(s.note.partner) noteBits.push(t("withPrefix")+s.note.partner);
+      if(s.note.tags && s.note.tags.length) noteBits.push(s.note.tags.join(", "));
+      if(s.note.comment) noteBits.push(s.note.comment);
+    }
+    return "<div class='hist-row'>"+
+      "<label class='chk-wrap' style='float:right;'><input type='checkbox' data-merge='"+s.id+"' style='margin-right:4px;'>"+t("histSelect")+"</label>"+
+      "<div class='hist-top'><div class='when'><b>"+dateLabel+"</b> · "+fmtTime(s.start)+"–"+(s.end?fmtTime(s.end):"…")+"</div><div class='dur'>"+fmtDurationShort(durationMs(s))+"</div></div>"+
+      (noteBits.length?"<div class='hist-note'>"+noteBits.join(" · ")+"</div>":"")+
+      (s.excluded?"<div class='hist-note' style='color:var(--amber)'>"+t("excludedNote")+"</div>":"")+
+      "<div class='hist-actions'>"+
+        "<button data-act='edit' data-id='"+s.id+"'>"+t("actEdit")+"</button>"+
+        "<button data-act='note' data-id='"+s.id+"'>"+t("actNote")+"</button>"+
+        "<button data-act='exclude' data-id='"+s.id+"'>"+(s.excluded?t("actExcludeOff"):t("actExcludeOn"))+"</button>"+
+        "<button data-act='split' data-id='"+s.id+"'>"+t("actSplit")+"</button>"+
+        "<button class='danger' data-act='delete' data-id='"+s.id+"'>"+t("actDelete")+"</button>"+
+      "</div>"+
+      "<div class='edit-slot'></div>"+
+    "</div>";
+  }
+
+  // Groups sessions by month in a single pass; months and entries both newest-first.
+  function groupSessionsByMonth(){
+    var map = {};
+    state.sessions.forEach(function(s){
+      var mk = dateKey(new Date(s.start)).slice(0,7);
+      if(!map[mk]) map[mk] = { key: mk, items: [], totalMs: 0 };
+      map[mk].items.push(s);
+      if(!s.excluded) map[mk].totalMs += durationMs(s);
+    });
+    var groups = Object.keys(map).sort().reverse().map(function(k){ return map[k]; });
+    groups.forEach(function(g){
+      g.items.sort(function(a,b){ return new Date(b.start)-new Date(a.start); });
+    });
+    return groups;
+  }
+
+  function monthTitle(monthKey){
+    var parts = monthKey.split("-").map(Number);
+    return t("months")[parts[1]-1]+" "+parts[0];
+  }
+
+  function fillMonthBody(group, bodyEl){
+    if(bodyEl.dataset.filled === "1") return;
+    var inner = document.createElement("div");
+    inner.className = "month-body-inner";
+    inner.innerHTML = group.items.map(historyRowHtml).join("");
+    bodyEl.innerHTML = "";
+    bodyEl.appendChild(inner);
+    bodyEl.dataset.filled = "1";
+  }
+
   function renderHistory(){
     var list = document.getElementById("historyList");
-    var sorted = state.sessions.slice().sort(function(a,b){ return new Date(b.start)-new Date(a.start); });
-    if(!sorted.length){ list.innerHTML = "<div class='empty-note'>"+t("emptyHistory")+"</div>"; renderMergeBar(); return; }
+    if(!state.sessions.length){
+      list.innerHTML = "<div class='empty-note'>"+t("emptyHistory")+"</div>";
+      updateToggleAllLabel();
+      renderMergeBar();
+      return;
+    }
+    var groups = groupSessionsByMonth();
     list.innerHTML = "";
-    sorted.forEach(function(s){
-      var row = document.createElement("div");
-      row.className = "hist-row";
-      var d = new Date(s.start);
-      var dateLabel = pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear();
-      var noteBits = [];
-      if(s.note){
-        if(s.note.territory) noteBits.push(s.note.territory);
-        if(s.note.partner) noteBits.push(t("withPrefix")+s.note.partner);
-        if(s.note.tags && s.note.tags.length) noteBits.push(s.note.tags.join(", "));
-        if(s.note.comment) noteBits.push(s.note.comment);
+    groups.forEach(function(g){
+      var isOpen = !!state.openMonths[g.key];
+      var wrap = document.createElement("div");
+      wrap.className = "month-group"+(isOpen?" open":"");
+      wrap.dataset.month = g.key;
+      wrap.innerHTML =
+        "<button class='month-head' type='button'>"+
+          "<span class='chev'>▶</span>"+
+          "<span class='mh-name'>"+monthTitle(g.key)+"</span>"+
+          "<span class='mh-count'>"+g.items.length+" "+t("entriesShort")+"</span>"+
+          "<span class='mh-hours'>"+fmtDurationShort(g.totalMs)+"</span>"+
+        "</button>"+
+        "<div class='month-body'></div>";
+      var body = wrap.querySelector(".month-body");
+      // Entries are only built for months that are actually open — keeps big histories fast.
+      if(isOpen){
+        fillMonthBody(g, body);
+        body.style.maxHeight = "none";
       }
-      row.innerHTML =
-        "<label class='chk-wrap' style='float:right;'><input type='checkbox' data-merge='"+s.id+"' style='margin-right:4px;'>"+t("histSelect")+"</label>"+
-        "<div class='hist-top'><div class='when'><b>"+dateLabel+"</b> · "+fmtTime(s.start)+"–"+(s.end?fmtTime(s.end):"…")+"</div><div class='dur'>"+fmtDurationShort(durationMs(s))+"</div></div>"+
-        (noteBits.length?"<div class='hist-note'>"+noteBits.join(" · ")+"</div>":"")+
-        (s.excluded?"<div class='hist-note' style='color:var(--amber)'>"+t("excludedNote")+"</div>":"")+
-        "<div class='hist-actions'>"+
-          "<button data-act='edit' data-id='"+s.id+"'>"+t("actEdit")+"</button>"+
-          "<button data-act='note' data-id='"+s.id+"'>"+t("actNote")+"</button>"+
-          "<button data-act='exclude' data-id='"+s.id+"'>"+(s.excluded?t("actExcludeOff"):t("actExcludeOn"))+"</button>"+
-          "<button data-act='split' data-id='"+s.id+"'>"+t("actSplit")+"</button>"+
-          "<button class='danger' data-act='delete' data-id='"+s.id+"'>"+t("actDelete")+"</button>"+
-        "</div>"+
-        "<div class='edit-slot'></div>";
-      list.appendChild(row);
+      wrap.querySelector(".month-head").onclick = function(){ toggleMonth(g, wrap, body); };
+      list.appendChild(wrap);
     });
+    updateToggleAllLabel();
     renderMergeBar();
   }
+
+  function toggleMonth(group, wrap, body){
+    var isOpen = wrap.classList.contains("open");
+    if(isOpen){
+      body.style.maxHeight = body.scrollHeight+"px";  // fix current height so it can animate down
+      requestAnimationFrame(function(){
+        body.style.maxHeight = "0px";
+        wrap.classList.remove("open");
+      });
+      state.openMonths[group.key] = false;
+    } else {
+      fillMonthBody(group, body);
+      wrap.classList.add("open");
+      body.style.maxHeight = body.scrollHeight+"px";
+      // After the animation, release the cap so edit forms inside can grow freely.
+      setTimeout(function(){ if(wrap.classList.contains("open")) body.style.maxHeight = "none"; }, 320);
+      state.openMonths[group.key] = true;
+    }
+    updateToggleAllLabel();
+  }
+
+  function allMonthsOpen(){
+    var groups = groupSessionsByMonth();
+    if(!groups.length) return false;
+    return groups.every(function(g){ return !!state.openMonths[g.key]; });
+  }
+  function updateToggleAllLabel(){
+    var btn = document.getElementById("toggleAllMonths");
+    if(!btn) return;
+    var has = state.sessions.length > 0;
+    btn.style.display = has ? "" : "none";
+    btn.textContent = allMonthsOpen() ? t("collapseAllMonths") : t("expandAllMonths");
+  }
+  function toggleAllMonths(){
+    var open = !allMonthsOpen();
+    groupSessionsByMonth().forEach(function(g){ state.openMonths[g.key] = open; });
+    renderHistory();
+  }
+
   function renderMergeBar(){
     var bar = document.getElementById("mergeBar");
     var checked = Array.prototype.slice.call(document.querySelectorAll("[data-merge]:checked")).map(function(c){ return c.dataset.merge; });
@@ -1320,7 +1439,7 @@
   // ---------- app version & updates ----------
   // APP_VERSION is baked into this file at build/deploy time.
   // version.json is published alongside it and is the source of truth for "what's live".
-  var APP_VERSION = "1.0.0";
+  var APP_VERSION = "1.1.0";
   var LAST_UPDATE_KEY = "ministry-last-update";
   var PENDING_UPDATE_KEY = "ministry-pending-update";
 
@@ -1562,6 +1681,7 @@
   document.getElementById("noteCancel").onclick = closeNoteModal;
   document.getElementById("noteSave").onclick = saveNote;
   document.getElementById("addManualBtn").onclick = openManualModal;
+  document.getElementById("toggleAllMonths").onclick = toggleAllMonths;
   document.getElementById("btnCheckUpdates").onclick = checkForUpdates;
   document.getElementById("updateCancel").onclick = closeUpdateModal;
   document.getElementById("updateConfirm").onclick = performUpdate;
