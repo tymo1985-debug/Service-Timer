@@ -162,6 +162,9 @@
   .set-row{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:10px; }
   .set-row label{ font-size:13px; font-weight:500; display:block; margin-bottom:6px; }
   .set-row .hint{ font-size:11px; color:var(--ink-faint); margin-top:5px; }
+  .ver-row{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:13px; padding:4px 0; }
+  .ver-row .ver-key{ color:var(--ink-soft); }
+  .ver-row .ver-val{ font-weight:600; font-variant-numeric:tabular-nums; text-align:right; }
   .seg{ display:flex; border:1px solid var(--line); border-radius:9px; overflow:hidden; }
   .seg button{ flex:1; border:none; background:var(--paper-2); padding:8px; font-size:13px; cursor:pointer; color:var(--ink-soft); font-family:inherit; border-right:1px solid var(--line); }
   .seg button:last-child{ border-right:none; }
@@ -314,6 +317,16 @@
         <input type="file" id="fileImport" accept="application/json" style="display:none">
         <div class="hint" data-i18n="backupHint">Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.</div>
       </div>
+
+      <div class="set-row">
+        <label data-i18n="setUpdateLabel">Обновления приложения</label>
+        <div class="ver-row"><span class="ver-key" data-i18n="currentVersionLabel">Текущая версия</span><span class="ver-val" id="verCurrent">—</span></div>
+        <div class="ver-row"><span class="ver-key" data-i18n="lastUpdateLabel">Последнее обновление</span><span class="ver-val" id="verLastUpdate">—</span></div>
+        <div class="file-row" style="margin-top:10px;">
+          <button id="btnCheckUpdates" data-i18n="btnCheckUpdates">Проверить обновления</button>
+        </div>
+        <div class="hint" id="updateStatus"></div>
+      </div>
     </section>
   </main>
 
@@ -399,6 +412,23 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="updateOverlay">
+  <div class="modal">
+    <h3 data-i18n="updateModalTitle">Доступно обновление</h3>
+    <div class="field">
+      <div id="updateVersionLine" style="font-size:14px;"></div>
+    </div>
+    <div class="field" id="releaseNotesBlock" style="display:none;">
+      <label data-i18n="releaseNotesLabel">Что нового</label>
+      <ul id="releaseNotesList" style="margin:6px 0 0; padding-left:18px; font-size:13px; color:var(--ink-soft); line-height:1.6;"></ul>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="updateCancel" data-i18n="btnCancel">Отмена</button>
+      <button class="primary" id="updateConfirm" data-i18n="btnUpdateNow">Обновить</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -427,6 +457,15 @@
       setGoalLabel:"Цель на месяц (часы)", setThemeLabel:"Тема", themeLight:"Светлая", themeDark:"Тёмная", themeAuto:"Авто",
       setFormatLabel:"Формат времени", format24:"24 ч", format12:"12 ч (AM/PM)", setLangLabel:"Язык", setAccentLabel:"Акцентный цвет",
       setDataLabel:"Данные", btnExportCsv:"Экспорт CSV", btnBackup:"Резервная копия", btnImportTrigger:"Восстановить из копии",
+      setUpdateLabel:"Обновления приложения", btnCheckUpdates:"Проверить обновления",
+      currentVersionLabel:"Текущая версия", lastUpdateLabel:"Последнее обновление", neverUpdated:"—",
+      checkingUpdates:"Проверка обновлений…", upToDate:"У вас установлена последняя версия приложения.",
+      updateModalTitle:"Доступно обновление", updateAvailableText:"Доступна новая версия",
+      releaseNotesLabel:"Что нового", btnUpdateNow:"Обновить", updatingNow:"Обновление…",
+      updateSuccess:"Приложение успешно обновлено до последней версии.",
+      updateErrorOffline:"Нет подключения к интернету. Проверьте соединение и попробуйте снова.",
+      updateErrorServer:"Не удалось проверить обновления: сервер недоступен.",
+      updateErrorFailed:"Не удалось выполнить обновление. Попробуйте позже.",
       backupHint:"Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.",
       noteModalTitleNew:"Заметка о служении", noteModalTitleAfterStop:"Заметка о завершённом служении",
       manualModalTitle:"Запись вручную",
@@ -469,6 +508,15 @@
       setGoalLabel:"Ціль на місяць (години)", setThemeLabel:"Тема", themeLight:"Світла", themeDark:"Темна", themeAuto:"Авто",
       setFormatLabel:"Формат часу", format24:"24 год", format12:"12 год (AM/PM)", setLangLabel:"Мова", setAccentLabel:"Акцентний колір",
       setDataLabel:"Дані", btnExportCsv:"Експорт CSV", btnBackup:"Резервна копія", btnImportTrigger:"Відновити з копії",
+      setUpdateLabel:"Оновлення додатка", btnCheckUpdates:"Перевірити оновлення",
+      currentVersionLabel:"Поточна версія", lastUpdateLabel:"Останнє оновлення", neverUpdated:"—",
+      checkingUpdates:"Перевірка оновлень…", upToDate:"У вас встановлено останню версію додатка.",
+      updateModalTitle:"Доступне оновлення", updateAvailableText:"Доступна нова версія",
+      releaseNotesLabel:"Що нового", btnUpdateNow:"Оновити", updatingNow:"Оновлення…",
+      updateSuccess:"Додаток успішно оновлено до останньої версії.",
+      updateErrorOffline:"Немає підключення до інтернету. Перевірте з'єднання та спробуйте знову.",
+      updateErrorServer:"Не вдалося перевірити оновлення: сервер недоступний.",
+      updateErrorFailed:"Не вдалося виконати оновлення. Спробуйте пізніше.",
       backupHint:"Резервна копія зберігає всі записи та налаштування у файл JSON, який можна відновити пізніше на будь-якому пристрої.",
       noteModalTitleNew:"Нотатка про служіння", noteModalTitleAfterStop:"Нотатка про завершене служіння",
       manualModalTitle:"Запис вручну",
@@ -511,6 +559,15 @@
       setGoalLabel:"Monatsziel (Stunden)", setThemeLabel:"Design", themeLight:"Hell", themeDark:"Dunkel", themeAuto:"Automatisch",
       setFormatLabel:"Zeitformat", format24:"24 Std", format12:"12 Std (AM/PM)", setLangLabel:"Sprache", setAccentLabel:"Akzentfarbe",
       setDataLabel:"Daten", btnExportCsv:"CSV exportieren", btnBackup:"Backup erstellen", btnImportTrigger:"Aus Backup wiederherstellen",
+      setUpdateLabel:"App-Updates", btnCheckUpdates:"Nach Updates suchen",
+      currentVersionLabel:"Aktuelle Version", lastUpdateLabel:"Letztes Update", neverUpdated:"—",
+      checkingUpdates:"Suche nach Updates…", upToDate:"Sie haben die neueste Version der App installiert.",
+      updateModalTitle:"Update verfügbar", updateAvailableText:"Eine neue Version ist verfügbar",
+      releaseNotesLabel:"Neuerungen", btnUpdateNow:"Aktualisieren", updatingNow:"Wird aktualisiert…",
+      updateSuccess:"Die App wurde erfolgreich auf die neueste Version aktualisiert.",
+      updateErrorOffline:"Keine Internetverbindung. Bitte Verbindung prüfen und erneut versuchen.",
+      updateErrorServer:"Updates konnten nicht geprüft werden: Server nicht erreichbar.",
+      updateErrorFailed:"Update fehlgeschlagen. Bitte später erneut versuchen.",
       backupHint:"Das Backup speichert alle Einträge und Einstellungen in einer JSON-Datei, die später auf jedem Gerät wiederhergestellt werden kann.",
       noteModalTitleNew:"Notiz zum Dienst", noteModalTitleAfterStop:"Notiz zum abgeschlossenen Dienst",
       manualModalTitle:"Manueller Eintrag",
@@ -553,6 +610,15 @@
       setGoalLabel:"Monthly goal (hours)", setThemeLabel:"Theme", themeLight:"Light", themeDark:"Dark", themeAuto:"Auto",
       setFormatLabel:"Time format", format24:"24h", format12:"12h (AM/PM)", setLangLabel:"Language", setAccentLabel:"Accent color",
       setDataLabel:"Data", btnExportCsv:"Export CSV", btnBackup:"Create backup", btnImportTrigger:"Restore from backup",
+      setUpdateLabel:"App updates", btnCheckUpdates:"Check for updates",
+      currentVersionLabel:"Current version", lastUpdateLabel:"Last update", neverUpdated:"—",
+      checkingUpdates:"Checking for updates…", upToDate:"You have the latest version of the app installed.",
+      updateModalTitle:"Update available", updateAvailableText:"A new version is available",
+      releaseNotesLabel:"What's new", btnUpdateNow:"Update", updatingNow:"Updating…",
+      updateSuccess:"The app was successfully updated to the latest version.",
+      updateErrorOffline:"No internet connection. Please check your connection and try again.",
+      updateErrorServer:"Could not check for updates: server unavailable.",
+      updateErrorFailed:"Update failed. Please try again later.",
       backupHint:"The backup saves all entries and settings to a JSON file that can be restored later on any device.",
       noteModalTitleNew:"Service note", noteModalTitleAfterStop:"Note for the completed service",
       manualModalTitle:"Manual entry",
@@ -1251,6 +1317,148 @@
     if(ev.target.dataset.merge) renderMergeBar();
   });
 
+  // ---------- app version & updates ----------
+  // APP_VERSION is baked into this file at build/deploy time.
+  // version.json is published alongside it and is the source of truth for "what's live".
+  var APP_VERSION = "1.0.0";
+  var LAST_UPDATE_KEY = "ministry-last-update";
+  var PENDING_UPDATE_KEY = "ministry-pending-update";
+
+  function safeGetLocal(key){
+    try{ return localStorage.getItem(key); }catch(e){ return null; }
+  }
+  function safeSetLocal(key, val){
+    try{ localStorage.setItem(key, val); return true; }catch(e){ return false; }
+  }
+  function safeRemoveLocal(key){
+    try{ localStorage.removeItem(key); }catch(e){}
+  }
+
+  // Compares "1.2.10" vs "1.3.0" numerically, segment by segment.
+  function isNewerVersion(candidate, current){
+    var a = String(candidate).split(".").map(function(n){ return parseInt(n,10)||0; });
+    var b = String(current).split(".").map(function(n){ return parseInt(n,10)||0; });
+    var len = Math.max(a.length, b.length);
+    for(var i=0;i<len;i++){
+      var x = a[i]||0, y = b[i]||0;
+      if(x > y) return true;
+      if(x < y) return false;
+    }
+    return false;
+  }
+
+  function fmtDateTime(iso){
+    if(!iso) return t("neverUpdated");
+    var d = new Date(iso);
+    if(isNaN(d)) return t("neverUpdated");
+    return pad(d.getDate())+"."+pad(d.getMonth()+1)+"."+d.getFullYear()+" "+fmtTime(iso);
+  }
+
+  function renderVersionInfo(){
+    document.getElementById("verCurrent").textContent = APP_VERSION;
+    document.getElementById("verLastUpdate").textContent = fmtDateTime(safeGetLocal(LAST_UPDATE_KEY));
+  }
+
+  function setUpdateStatus(msg, isError){
+    var el = document.getElementById("updateStatus");
+    el.textContent = msg || "";
+    el.style.color = isError ? "var(--red)" : "var(--ink-faint)";
+  }
+
+  var pendingUpdateInfo = null;
+
+  async function checkForUpdates(){
+    var btn = document.getElementById("btnCheckUpdates");
+    if(!navigator.onLine){ setUpdateStatus(t("updateErrorOffline"), true); return; }
+    btn.disabled = true;
+    setUpdateStatus(t("checkingUpdates"), false);
+    try{
+      // Cache-busting query + no-store so we always hit the deploy, never the SW/HTTP cache.
+      var res = await fetch("version.json?ts="+Date.now(), { cache: "no-store" });
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      var info = await res.json();
+      if(!info || !info.version) throw new Error("malformed");
+      if(isNewerVersion(info.version, APP_VERSION)){
+        pendingUpdateInfo = info;
+        setUpdateStatus("", false);
+        openUpdateModal(info);
+      } else {
+        setUpdateStatus(t("upToDate"), false);
+      }
+    }catch(err){
+      setUpdateStatus(navigator.onLine ? t("updateErrorServer") : t("updateErrorOffline"), true);
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  function openUpdateModal(info){
+    document.getElementById("updateVersionLine").textContent =
+      t("updateAvailableText")+": "+info.version+" (" + t("currentVersionLabel").toLowerCase() + ": "+APP_VERSION+")";
+    var block = document.getElementById("releaseNotesBlock");
+    var list = document.getElementById("releaseNotesList");
+    var notes = info.releaseNotes;
+    if(notes && !Array.isArray(notes)) notes = [String(notes)];
+    if(notes && notes.length){
+      list.innerHTML = "";
+      notes.forEach(function(n){
+        var li = document.createElement("li");
+        li.textContent = String(n);
+        list.appendChild(li);
+      });
+      block.style.display = "block";
+    } else {
+      block.style.display = "none";
+    }
+    document.getElementById("updateOverlay").classList.add("open");
+  }
+  function closeUpdateModal(){
+    document.getElementById("updateOverlay").classList.remove("open");
+  }
+
+  // Installs the update: drops the old service worker + caches, then reloads from network.
+  // User data lives in localStorage / app storage and is never touched here.
+  async function performUpdate(){
+    if(!pendingUpdateInfo) return;
+    var btn = document.getElementById("updateConfirm");
+    btn.disabled = true;
+    btn.textContent = t("updatingNow");
+    try{
+      safeSetLocal(PENDING_UPDATE_KEY, JSON.stringify({ version: pendingUpdateInfo.version }));
+      if("serviceWorker" in navigator){
+        var regs = await navigator.serviceWorker.getRegistrations();
+        for(var i=0;i<regs.length;i++){ await regs[i].unregister(); }
+      }
+      if(window.caches){
+        var names = await caches.keys();
+        for(var j=0;j<names.length;j++){ await caches.delete(names[j]); }
+      }
+      // Cache-busting query guarantees a fresh index.html rather than an HTTP-cached copy.
+      location.replace(location.pathname+"?v="+Date.now());
+    }catch(err){
+      safeRemoveLocal(PENDING_UPDATE_KEY);
+      btn.disabled = false;
+      btn.textContent = t("btnUpdateNow");
+      closeUpdateModal();
+      setUpdateStatus(t("updateErrorFailed"), true);
+    }
+  }
+
+  // Runs on startup: if we just came back from an update, confirm it landed.
+  function finalizePendingUpdate(){
+    var raw = safeGetLocal(PENDING_UPDATE_KEY);
+    if(!raw) return;
+    safeRemoveLocal(PENDING_UPDATE_KEY);
+    var expected = null;
+    try{ expected = JSON.parse(raw).version; }catch(e){}
+    if(expected && expected === APP_VERSION){
+      safeSetLocal(LAST_UPDATE_KEY, new Date().toISOString());
+      setTimeout(function(){ toast(t("updateSuccess")); }, 400);
+    } else if(expected){
+      setTimeout(function(){ toast(t("updateErrorFailed")); }, 400);
+    }
+  }
+
   // ---------- settings ----------
   function renderSettings(){
     document.getElementById("setGoal").value = state.settings.goalHours;
@@ -1259,6 +1467,7 @@
     document.getElementById("setLang").value = lang();
     document.getElementById("setAccentColor").value = state.settings.accentColor || "#0F6E56";
     renderAccentPresets();
+    renderVersionInfo();
   }
   document.getElementById("setGoal").addEventListener("change", function(e){
     var v = parseInt(e.target.value,10);
@@ -1353,6 +1562,9 @@
   document.getElementById("noteCancel").onclick = closeNoteModal;
   document.getElementById("noteSave").onclick = saveNote;
   document.getElementById("addManualBtn").onclick = openManualModal;
+  document.getElementById("btnCheckUpdates").onclick = checkForUpdates;
+  document.getElementById("updateCancel").onclick = closeUpdateModal;
+  document.getElementById("updateConfirm").onclick = performUpdate;
   document.getElementById("manCancel").onclick = closeManualModal;
   document.getElementById("manSave").onclick = saveManualEntry;
   document.getElementById("manHours").addEventListener("input", renderDurationChips);
@@ -1370,6 +1582,7 @@
   (async function init(){
     await loadState();
     applyI18n();
+    finalizePendingUpdate();
     renderTimer();
     startTicking();
     setView("main");

@@ -1,4 +1,4 @@
-const CACHE_NAME = "service-timer-v9";
+const CACHE_NAME = "service-timer-v10";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -30,6 +30,13 @@ self.addEventListener("activate", function(event){
 
 self.addEventListener("fetch", function(event){
   if(event.request.method !== "GET") return;
+
+  // version.json must always come from the network — it is how the app detects new deploys.
+  if(event.request.url.indexOf("version.json") !== -1){
+    event.respondWith(fetch(event.request, { cache: "no-store" }));
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(function(cached){
       if(cached) return cached;
