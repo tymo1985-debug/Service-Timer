@@ -12,8 +12,6 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg: #F2F3EF;
@@ -58,7 +56,7 @@
   *{box-sizing:border-box;}
   body{
     margin:0; background:var(--bg); color:var(--ink);
-    font-family:'Inter',system-ui,sans-serif;
+    font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
     -webkit-font-smoothing:antialiased;
   }
   #app{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding-bottom:84px; }
@@ -79,7 +77,9 @@
   .ring-track{ fill:none; stroke:var(--line); stroke-width:5; }
   .ring-progress{ fill:none; stroke:var(--teal); stroke-width:5; stroke-linecap:round; stroke-dasharray:8 6; transition:stroke-dashoffset 1s linear; }
   .timer-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
-  .timer-digits{ font-family:'JetBrains Mono',monospace; font-size:38px; font-weight:600; letter-spacing:0.01em; font-variant-numeric:tabular-nums; }
+  .timer-digits{ font-family:ui-monospace,"SFMono-Regular",Consolas,monospace; font-size:38px; font-weight:600; letter-spacing:0.01em; font-variant-numeric:tabular-nums; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible{ outline:3px solid var(--teal-mid); outline-offset:2px; }
+  @media (prefers-reduced-motion:reduce){ *,*::before,*::after{ scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
   .timer-label{ font-size:12px; color:var(--ink-faint); margin-top:4px; text-transform:uppercase; letter-spacing:0.08em; }
 
   .timer-meta{ display:flex; justify-content:center; gap:28px; margin:14px 0 20px; font-size:13px; color:var(--ink-soft); }
@@ -122,7 +122,7 @@
   .month-total .mt-value{ font-size:18px; font-weight:600; color:var(--teal-deep); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
   .cal-dow{ font-size:10px; color:var(--ink-faint); text-align:center; padding-bottom:4px; }
-  .cal-day{ aspect-ratio:1; border-radius:10px; border:1px solid var(--line); background:var(--paper); display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; cursor:pointer; position:relative; padding:2px; }
+  .cal-day{ aspect-ratio:1; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; cursor:pointer; position:relative; padding:2px; }
   .cal-day.empty{ visibility:hidden; }
   .cal-day .d{ font-weight:600; font-size:12px; }
   .cal-day .t{ font-size:9px; color:var(--teal); margin-top:1px; text-align:center; line-height:1.1; }
@@ -274,9 +274,9 @@
     <!-- CALENDAR VIEW -->
     <section class="view" id="view-calendar">
       <div class="cal-nav">
-        <button id="calPrev">‹</button>
+        <button id="calPrev" type="button" aria-label="Previous month">‹</button>
         <div class="month-label" id="calMonthLabel">—</div>
-        <button id="calNext">›</button>
+        <button id="calNext" type="button" aria-label="Next month">›</button>
       </div>
       <div class="month-total">
         <span class="mt-label" id="calTotalLabel">Всего за месяц</span>
@@ -366,8 +366,8 @@
   </nav>
 </div>
 
-<div class="modal-overlay" id="noteOverlay">
-  <div class="modal">
+<div class="modal-overlay" id="noteOverlay" role="dialog" aria-modal="true" aria-labelledby="noteModalTitle">
+  <div class="modal" tabindex="-1">
     <h3 id="noteModalTitle">Заметка о служении</h3>
     <div class="field">
       <label data-i18n="fieldTerritory">Территория</label>
@@ -392,9 +392,9 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="manualOverlay">
-  <div class="modal">
-    <h3 data-i18n="manualModalTitle">Запись вручную</h3>
+<div class="modal-overlay" id="manualOverlay" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
+  <div class="modal" tabindex="-1">
+    <h3 id="manualModalTitle" data-i18n="manualModalTitle">Запись вручную</h3>
     <div class="field">
       <label data-i18n="fieldDate">Дата</label>
       <input type="date" id="manDate">
@@ -440,9 +440,9 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="updateOverlay">
-  <div class="modal">
-    <h3 data-i18n="updateModalTitle">Доступно обновление</h3>
+<div class="modal-overlay" id="updateOverlay" role="dialog" aria-modal="true" aria-labelledby="updateModalHeading">
+  <div class="modal" tabindex="-1">
+    <h3 id="updateModalHeading" data-i18n="updateModalTitle">Доступно обновление</h3>
     <div class="field">
       <div id="updateVersionLine" style="font-size:14px;"></div>
     </div>
@@ -460,7 +460,7 @@
 <div class="update-banner" id="updateBanner">
   <div class="ub-top">
     <span class="ub-title" id="ubTitle">Доступно обновление</span>
-    <button class="ub-close" id="ubClose" aria-label="×">×</button>
+    <button class="ub-close" id="ubClose" aria-label="Close">×</button>
   </div>
   <div class="ub-version" id="ubVersion"></div>
   <ul class="ub-notes" id="ubNotes"></ul>
@@ -470,8 +470,9 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="app-core.js"></script>
 <script>
 (function(){
   "use strict";
@@ -688,7 +689,8 @@
   };
   function lang(){ return I18N[state.settings.lang] ? state.settings.lang : "ru"; }
   function t(key){ var d = I18N[lang()]; return (d && d[key]!=null) ? d[key] : (I18N.ru[key]!=null ? I18N.ru[key] : key); }
-  function currentTags(){ return t("tags"); }
+  function currentTags(){ return ServiceTimerCore.TAG_IDS.map(function(id,i){ return {id:id,label:t("tags")[i]}; }); }
+  function tagLabel(id){ var item=currentTags().find(function(x){return x.id===id;}); return item?item.label:id; }
   var state = {
     sessions: [],
     settings: { goalHours: 30, theme: "auto", timeFormat: 24, weekStart: 1, lang: "ru", accentColor: "#0F6E56" },
@@ -702,8 +704,9 @@
     openMonths: {}   // { "2026-08": true } — expanded state, kept for the app session
   };
 
-  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+  function uid(){ return ServiceTimerCore.uid(); }
   function pad(n){ return String(n).padStart(2,"0"); }
+  function escapeHtml(value){ return String(value).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
   function toast(msg){
     var t = document.getElementById("toast");
     t.textContent = msg; t.classList.add("show");
@@ -723,23 +726,18 @@
   }
 
   // ---------- storage (browser localStorage — persists on this device/browser) ----------
+  var appStorage = ServiceTimerCore.createStorage(localStorage);
   async function loadState(){
-    try{
-      var s = localStorage.getItem("ministry-sessions");
-      state.sessions = s ? JSON.parse(s) : [];
-    }catch(e){ state.sessions = []; }
-    try{
-      var st = localStorage.getItem("ministry-settings");
-      if(st) state.settings = Object.assign(state.settings, JSON.parse(st));
-    }catch(e){}
+    try{ var data=appStorage.load(); state.sessions=data.sessions; state.settings=data.settings; }
+    catch(e){ state.sessions=[]; state.settings=Object.assign({},ServiceTimerCore.DEFAULT_SETTINGS); toast(t("toastImportFail")); }
     applyTheme();
   }
   async function saveSessions(){
-    try{ localStorage.setItem("ministry-sessions", JSON.stringify(state.sessions)); }
+    try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings}); state.sessions=saved.sessions; }
     catch(e){ toast(t("toastSaveDataFail")); }
   }
   async function saveSettings(){
-    try{ localStorage.setItem("ministry-settings", JSON.stringify(state.settings)); }
+    try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings}); state.settings=saved.settings; }
     catch(e){ toast(t("toastSaveSettingsFail")); }
   }
 
@@ -756,10 +754,7 @@
   function dateKey(d){ return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
   function todayKey(){ return dateKey(new Date()); }
   function durationMs(s){
-    var end = s.end ? new Date(s.end) : new Date();
-    var raw = end - new Date(s.start);
-    var pausedTotal = (s.pausedMs||0) + ((s.paused && s.pausedAt) ? (new Date() - new Date(s.pausedAt)) : 0);
-    return Math.max(0, raw - pausedTotal);
+    return ServiceTimerCore.durationMs(s);
   }
   function fmtDurationShort(ms){
     var totalMin = Math.round(ms/60000);
@@ -982,7 +977,7 @@
 
   // ---------- actions ----------
   async function startSession(){
-    state.sessions.push({ id: uid(), start: new Date().toISOString(), end: null, paused:false, pausedAt:null, pausedMs:0, note: {territory:"",partner:"",comment:"",tags:[]}, excluded:false });
+    state.sessions.push({ id: uid(), start: new Date().toISOString(), end: null, paused:false, pausedAt:null, pausedMs:0, elapsedMs:null, note: {territory:"",partner:"",comment:"",tags:[]}, excluded:false });
     await saveSessions();
     renderTimer();
     toast(t("toastServiceStarted"));
@@ -1015,6 +1010,7 @@
       act.pausedAt = null;
     }
     act.end = new Date().toISOString();
+    act.elapsedMs = Math.max(0, new Date(act.end)-new Date(act.start)-(act.pausedMs||0));
     await saveSessions();
     renderTimer();
     refreshAll();
@@ -1039,13 +1035,14 @@
     row.innerHTML = "";
     currentTags().forEach(function(tag){
       var el = document.createElement("div");
-      el.className = "tag"+(state.activeTags.indexOf(tag)>=0?" active":"");
-      el.textContent = tag;
+      el.className = "tag"+(state.activeTags.indexOf(tag.id)>=0?" active":"");
+      el.textContent = tag.label; el.setAttribute("role","checkbox"); el.tabIndex=0; el.setAttribute("aria-checked",state.activeTags.indexOf(tag.id)>=0?"true":"false");
       el.onclick = function(){
-        var i = state.activeTags.indexOf(tag);
-        if(i>=0) state.activeTags.splice(i,1); else state.activeTags.push(tag);
+        var i = state.activeTags.indexOf(tag.id);
+        if(i>=0) state.activeTags.splice(i,1); else state.activeTags.push(tag.id);
         renderTags();
       };
+      el.onkeydown=function(e){ if(e.key===" "||e.key==="Enter"){e.preventDefault();el.click();} };
       row.appendChild(el);
     });
   }
@@ -1115,13 +1112,14 @@
     row.innerHTML = "";
     currentTags().forEach(function(tag){
       var el = document.createElement("div");
-      el.className = "tag"+(manualTags.indexOf(tag)>=0?" active":"");
-      el.textContent = tag;
+      el.className = "tag"+(manualTags.indexOf(tag.id)>=0?" active":"");
+      el.textContent = tag.label; el.setAttribute("role","checkbox"); el.tabIndex=0; el.setAttribute("aria-checked",manualTags.indexOf(tag.id)>=0?"true":"false");
       el.onclick = function(){
-        var i = manualTags.indexOf(tag);
-        if(i>=0) manualTags.splice(i,1); else manualTags.push(tag);
+        var i = manualTags.indexOf(tag.id);
+        if(i>=0) manualTags.splice(i,1); else manualTags.push(tag.id);
         renderManualTags();
       };
+      el.onkeydown=function(e){ if(e.key===" "||e.key==="Enter"){e.preventDefault();el.click();} };
       row.appendChild(el);
     });
   }
@@ -1149,6 +1147,7 @@
       id: uid(),
       start: start.toISOString(),
       end: end.toISOString(),
+      elapsedMs: end-start,
       note: {
         territory: document.getElementById("manTerritory").value.trim(),
         partner: document.getElementById("manPartner").value.trim(),
@@ -1202,9 +1201,11 @@
     var tKey = todayKey();
     for(var day=1; day<=daysInMonth; day++){
       var dk = year+"-"+pad(month+1)+"-"+pad(day);
-      var cell = document.createElement("div");
+      var cell = document.createElement("button"); cell.type="button";
       cell.className = "cal-day"+(byDay[dk]?" has-time":"")+(dk===tKey?" today":"")+(dk===state.selectedDay?" selected":"");
       cell.innerHTML = "<div class='d'>"+day+"</div>"+(byDay[dk]?"<div class='t'>"+fmtDurationShort(byDay[dk])+"</div>":"");
+      cell.setAttribute("aria-label",dk+(byDay[dk]?" — "+fmtDurationShort(byDay[dk]):""));
+      cell.setAttribute("aria-pressed",dk===state.selectedDay?"true":"false");
       cell.onclick = function(dkClosure){ return function(){ state.selectedDay = (state.selectedDay===dkClosure)?null:dkClosure; renderCalendar(); }; }(dk);
       grid.appendChild(cell);
     }
@@ -1237,13 +1238,13 @@
     if(s.note){
       if(s.note.territory) noteBits.push(s.note.territory);
       if(s.note.partner) noteBits.push(t("withPrefix")+s.note.partner);
-      if(s.note.tags && s.note.tags.length) noteBits.push(s.note.tags.join(", "));
+      if(s.note.tags && s.note.tags.length) noteBits.push(s.note.tags.map(tagLabel).join(", "));
       if(s.note.comment) noteBits.push(s.note.comment);
     }
     return "<div class='hist-row'>"+
       "<label class='chk-wrap' style='float:right;'><input type='checkbox' data-merge='"+s.id+"' style='margin-right:4px;'>"+t("histSelect")+"</label>"+
       "<div class='hist-top'><div class='when'><b>"+dateLabel+"</b> · "+fmtTime(s.start)+"–"+(s.end?fmtTime(s.end):"…")+"</div><div class='dur'>"+fmtDurationShort(durationMs(s))+"</div></div>"+
-      (noteBits.length?"<div class='hist-note'>"+noteBits.join(" · ")+"</div>":"")+
+      (noteBits.length?"<div class='hist-note'>"+escapeHtml(noteBits.join(" · "))+"</div>":"")+
       (s.excluded?"<div class='hist-note' style='color:var(--amber)'>"+t("excludedNote")+"</div>":"")+
       "<div class='hist-actions'>"+
         "<button data-act='edit' data-id='"+s.id+"'>"+t("actEdit")+"</button>"+
@@ -1374,19 +1375,10 @@
   async function mergeSessions(id1, id2){
     var a = state.sessions.find(function(s){ return s.id===id1; });
     var b = state.sessions.find(function(s){ return s.id===id2; });
-    if(!a||!b) return;
-    var starts = [new Date(a.start), new Date(b.start)];
-    var ends = [a.end?new Date(a.end):new Date(), b.end?new Date(b.end):new Date()];
-    var newStart = starts[0] < starts[1] ? a.start : b.start;
-    var newEnd = ends[0] > ends[1] ? (a.end||b.end) : (b.end||a.end);
-    var mergedNote = {
-      territory: a.note.territory || b.note.territory || "",
-      partner: a.note.partner || b.note.partner || "",
-      comment: [a.note.comment, b.note.comment].filter(Boolean).join(" / "),
-      tags: Array.from(new Set((a.note.tags||[]).concat(b.note.tags||[])))
-    };
+    if(!a||!b||!a.end||!b.end) { toast(t("toastCannotSplit")); return; }
+    var merged=ServiceTimerCore.mergeSessions(a,b);
     state.sessions = state.sessions.filter(function(s){ return s.id!==id1 && s.id!==id2; });
-    state.sessions.push({ id: uid(), start:newStart, end:newEnd, note:mergedNote, excluded:false });
+    state.sessions.push(merged);
     await saveSessions();
     toast(t("toastMerged"));
     refreshAll();
@@ -1394,10 +1386,8 @@
   async function splitSession(id){
     var s = state.sessions.find(function(x){ return x.id===id; });
     if(!s || !s.end) { toast(t("toastCannotSplit")); return; }
-    var mid = new Date((new Date(s.start).getTime() + new Date(s.end).getTime())/2);
-    var second = { id: uid(), start: mid.toISOString(), end: s.end, note: Object.assign({},s.note), excluded: s.excluded };
-    s.end = mid.toISOString();
-    state.sessions.push(second);
+    var parts=ServiceTimerCore.splitSession(s);
+    state.sessions=state.sessions.filter(function(x){return x.id!==id;}).concat(parts);
     await saveSessions();
     toast(t("toastSplit"));
     refreshAll();
@@ -1432,6 +1422,7 @@
         var newEnd = new Date(dateVal+"T"+endVal+":00");
         if(newEnd < newStart) newEnd.setDate(newEnd.getDate()+1);
         s.end = newEnd.toISOString();
+        s.elapsedMs = Math.max(0,newEnd-newStart-Math.min(s.pausedMs||0,newEnd-newStart));
       }
       await saveSessions();
       toast(t("toastEditSaved"));
@@ -1464,7 +1455,7 @@
   // ---------- app version & updates ----------
   // APP_VERSION is baked into this file at build/deploy time.
   // version.json is published alongside it and is the source of truth for "what's live".
-  var APP_VERSION = "1.2.0";
+  var APP_VERSION = "2.0.0";
   var LAST_UPDATE_KEY = "ministry-last-update";
   var PENDING_UPDATE_KEY = "ministry-pending-update";
 
@@ -1655,15 +1646,16 @@
       safeSetLocal(PENDING_UPDATE_KEY, JSON.stringify({ version: pendingUpdateInfo.version }));
       safeRemoveLocal(SNOOZE_KEY);   // updating clears any "remind me later" state
       if("serviceWorker" in navigator){
-        var regs = await navigator.serviceWorker.getRegistrations();
-        for(var i=0;i<regs.length;i++){ await regs[i].unregister(); }
-      }
-      if(window.caches){
-        var names = await caches.keys();
-        for(var j=0;j<names.length;j++){ await caches.delete(names[j]); }
+        var reg = await navigator.serviceWorker.getRegistration("./");
+        if(reg){ await reg.update(); if(reg.waiting) reg.waiting.postMessage({type:"SKIP_WAITING"}); }
       }
       // downloadUrl lets version.json point somewhere else; otherwise reload this same app.
-      var target = pendingUpdateInfo.downloadUrl || location.pathname;
+      var target = location.pathname;
+      if(pendingUpdateInfo.downloadUrl){
+        var candidate=new URL(pendingUpdateInfo.downloadUrl,location.href);
+        var scopePath=new URL("./",location.href).pathname;
+        if(candidate.origin===location.origin && candidate.pathname.indexOf(scopePath)===0) target=candidate.pathname;
+      }
       // Cache-busting query guarantees a fresh index.html rather than an HTTP-cached copy.
       location.replace(target + (target.indexOf("?")>=0 ? "&" : "?") + "v=" + Date.now());
     }catch(err){
@@ -1745,11 +1737,11 @@
         s.end?fmtTime(s.end):"",
         Math.round(durationMs(s)/60000),
         s.note.territory||"", s.note.partner||"",
-        (s.note.tags||[]).join("; "), (s.note.comment||"").replace(/\n/g," "),
+        (s.note.tags||[]).map(tagLabel).join("; "), (s.note.comment||"").replace(/\n/g," "),
         s.excluded?t("csvYes"):t("csvNo")
       ]);
     });
-    return rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(","); }).join("\r\n");
+    return rows.map(function(r){ return r.map(function(c){ var v=String(c); if(/^[=+\-@]/.test(v)) v="'"+v; return '"'+v.replace(/"/g,'""')+'"'; }).join(","); }).join("\r\n");
   }
   function downloadFile(content, filename, type){
     var blob = new Blob([content], {type:type});
@@ -1763,7 +1755,7 @@
     toast(t("toastCsvSaved"));
   };
   document.getElementById("btnBackup").onclick = function(){
-    var payload = JSON.stringify({sessions:state.sessions, settings:state.settings}, null, 2);
+    var payload = JSON.stringify({schemaVersion:ServiceTimerCore.SCHEMA_VERSION,exportedAt:new Date().toISOString(),appVersion:APP_VERSION,sessions:state.sessions,settings:state.settings}, null, 2);
     downloadFile(payload, "backup_service-log_"+todayKey()+".json", "application/json");
     toast(t("toastBackupSaved"));
   };
@@ -1774,10 +1766,11 @@
     var reader = new FileReader();
     reader.onload = async function(ev){
       try{
-        var data = JSON.parse(ev.target.result);
+        if(file.size>20*1024*1024) throw new Error("file too large");
+        var data = ServiceTimerCore.validateBackup(JSON.parse(ev.target.result));
         if(!confirm(t("confirmRestoreBackup"))) return;
-        if(Array.isArray(data.sessions)) state.sessions = data.sessions;
-        if(data.settings) state.settings = Object.assign(state.settings, data.settings);
+        state.sessions = data.sessions;
+        state.settings = data.settings;
         await saveSessions(); await saveSettings();
         applyTheme(); applyI18n(); renderTimer(); renderSettings();
         toast(t("toastRestored"));
@@ -1831,7 +1824,10 @@
 
   if("serviceWorker" in navigator){
     window.addEventListener("load", function(){
-      navigator.serviceWorker.register("service-worker.js").catch(function(){});
+      navigator.serviceWorker.register("service-worker.js",{scope:"./",updateViaCache:"none"}).then(function(reg){
+        navigator.serviceWorker.addEventListener("controllerchange",function(){ if(safeGetLocal(PENDING_UPDATE_KEY)) location.reload(); });
+        return reg.update();
+      }).catch(function(){});
     });
   }
 })();

@@ -1,10 +1,13 @@
 {
   "name": "Учёт служения",
+  "id": "./",
   "short_name": "Служение",
+  "lang": "ru",
   "description": "Учёт времени проповеднического служения — таймер, календарь, статистика",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "portrait",
   "background_color": "#F2F3EF",
   "theme_color": "#0F6E56",
