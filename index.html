@@ -207,7 +207,13 @@
   .modal-actions{ display:flex; gap:10px; margin-top:16px; }
   .modal-actions button{ flex:1; border:none; border-radius:10px; padding:12px; font-size:14px; cursor:pointer; font-family:inherit; }
   .modal-actions .primary{ background:var(--teal); color:#fff; }
+  .modal-actions .primary:disabled{ background:var(--paper-2); color:var(--ink-faint); cursor:not-allowed; }
   .modal-actions .ghost{ background:var(--paper-2); border:1px solid var(--line); color:var(--ink-soft); }
+  .update-warn{ font-size:12px; color:var(--ink-soft); background:var(--paper-2); border-radius:10px; padding:10px 12px; line-height:1.5; margin-top:2px; }
+  .update-backup-row{ display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; margin-top:10px; }
+  .update-backup-row .ghost{ border:1px solid var(--teal-mid); background:transparent; color:var(--teal); border-radius:10px; padding:9px 12px; font-size:13px; font-family:inherit; cursor:pointer; }
+  .update-backup-status{ font-size:12px; color:var(--ink-faint); }
+  .update-backup-status.ok{ color:var(--teal); font-weight:600; }
 
   .empty-note{ text-align:center; color:var(--ink-faint); font-size:13px; padding:30px 0; }
   .toast{ position:fixed; bottom:96px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); font-size:13px; padding:9px 16px; border-radius:10px; opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:60; }
@@ -220,6 +226,7 @@
   .update-banner .ub-version{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
   .update-banner .ub-notes{ margin:8px 0 0; padding-left:18px; font-size:12px; color:var(--ink-soft); line-height:1.55; max-height:88px; overflow-y:auto; }
   .update-banner .ub-notes:empty{ display:none; }
+  .update-banner .ub-warn{ font-size:11px; color:var(--ink-faint); margin-top:8px; line-height:1.5; }
   .update-banner .ub-actions{ display:flex; gap:8px; margin-top:12px; }
   .update-banner .ub-actions button{ flex:1; border-radius:10px; padding:10px; font-size:13px; font-family:inherit; cursor:pointer; }
   .update-banner .ub-later{ border:1px solid var(--line); background:var(--paper-2); color:var(--ink-soft); }
@@ -450,6 +457,11 @@
       <label data-i18n="releaseNotesLabel">Что нового</label>
       <ul id="releaseNotesList" style="margin:6px 0 0; padding-left:18px; font-size:13px; color:var(--ink-soft); line-height:1.6;"></ul>
     </div>
+    <div class="update-warn" id="updateWarn" data-i18n="updateDataSafeNote">Обновление не удаляет сохранённые данные — они хранятся на этом устройстве. Но перед обновлением рекомендуем сохранить резервную копию на случай сбоя.</div>
+    <div class="update-backup-row">
+      <button class="ghost" id="updateBackupBtn" data-i18n="btnSaveBackupNow">Сохранить резервную копию</button>
+      <span id="updateBackupStatus" class="update-backup-status"></span>
+    </div>
     <div class="modal-actions">
       <button class="ghost" id="updateCancel" data-i18n="btnCancel">Отмена</button>
       <button class="primary" id="updateConfirm" data-i18n="btnUpdateNow">Обновить</button>
@@ -464,6 +476,7 @@
   </div>
   <div class="ub-version" id="ubVersion"></div>
   <ul class="ub-notes" id="ubNotes"></ul>
+  <div class="ub-warn" id="ubWarn" data-i18n="updateDataSafeNote">Обновление не удаляет сохранённые данные — они хранятся на этом устройстве. Но перед обновлением рекомендуем сохранить резервную копию на случай сбоя.</div>
   <div class="ub-actions">
     <button class="ub-later" id="ubLater">Позже</button>
     <button class="ub-update" id="ubUpdate">Обновить</button>
@@ -509,6 +522,8 @@
       updateErrorOffline:"Нет подключения к интернету. Проверьте соединение и попробуйте снова.",
       updateErrorServer:"Не удалось проверить обновления: сервер недоступен.",
       updateErrorFailed:"Не удалось выполнить обновление. Попробуйте позже.",
+      updateDataSafeNote:"Обновление не удаляет сохранённые данные — они хранятся на этом устройстве. Но перед обновлением рекомендуем сохранить резервную копию на случай сбоя.",
+      btnSaveBackupNow:"Сохранить резервную копию", updateBackupPending:"Сначала сохраните резервную копию", updateBackupDone:"Резервная копия сохранена ✓",
       backupHint:"Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.",
       noteModalTitleNew:"Заметка о служении", noteModalTitleAfterStop:"Заметка о завершённом служении",
       manualModalTitle:"Запись вручную",
@@ -561,6 +576,8 @@
       updateErrorOffline:"Немає підключення до інтернету. Перевірте з'єднання та спробуйте знову.",
       updateErrorServer:"Не вдалося перевірити оновлення: сервер недоступний.",
       updateErrorFailed:"Не вдалося виконати оновлення. Спробуйте пізніше.",
+      updateDataSafeNote:"Оновлення не видаляє збережені дані — вони зберігаються на цьому пристрої. Але перед оновленням радимо зберегти резервну копію на випадок збою.",
+      btnSaveBackupNow:"Зберегти резервну копію", updateBackupPending:"Спочатку збережіть резервну копію", updateBackupDone:"Резервну копію збережено ✓",
       backupHint:"Резервна копія зберігає всі записи та налаштування у файл JSON, який можна відновити пізніше на будь-якому пристрої.",
       noteModalTitleNew:"Нотатка про служіння", noteModalTitleAfterStop:"Нотатка про завершене служіння",
       manualModalTitle:"Запис вручну",
@@ -613,6 +630,8 @@
       updateErrorOffline:"Keine Internetverbindung. Bitte Verbindung prüfen und erneut versuchen.",
       updateErrorServer:"Updates konnten nicht geprüft werden: Server nicht erreichbar.",
       updateErrorFailed:"Update fehlgeschlagen. Bitte später erneut versuchen.",
+      updateDataSafeNote:"Beim Update werden gespeicherte Daten nicht gelöscht — sie bleiben auf diesem Gerät. Vor dem Update empfehlen wir dennoch ein Backup für den Fall eines Fehlers.",
+      btnSaveBackupNow:"Backup jetzt speichern", updateBackupPending:"Bitte zuerst ein Backup speichern", updateBackupDone:"Backup gespeichert ✓",
       backupHint:"Das Backup speichert alle Einträge und Einstellungen in einer JSON-Datei, die später auf jedem Gerät wiederhergestellt werden kann.",
       noteModalTitleNew:"Notiz zum Dienst", noteModalTitleAfterStop:"Notiz zum abgeschlossenen Dienst",
       manualModalTitle:"Manueller Eintrag",
@@ -665,6 +684,8 @@
       updateErrorOffline:"No internet connection. Please check your connection and try again.",
       updateErrorServer:"Could not check for updates: server unavailable.",
       updateErrorFailed:"Update failed. Please try again later.",
+      updateDataSafeNote:"Updating never deletes your saved data — it stays on this device. Still, we recommend saving a backup before updating in case something goes wrong.",
+      btnSaveBackupNow:"Save backup now", updateBackupPending:"Save a backup first", updateBackupDone:"Backup saved ✓",
       backupHint:"The backup saves all entries and settings to a JSON file that can be restored later on any device.",
       noteModalTitleNew:"Service note", noteModalTitleAfterStop:"Note for the completed service",
       manualModalTitle:"Manual entry",
@@ -1455,9 +1476,12 @@
   // ---------- app version & updates ----------
   // APP_VERSION is baked into this file at build/deploy time.
   // version.json is published alongside it and is the source of truth for "what's live".
-  var APP_VERSION = "2.0.0";
+  var APP_VERSION = "2.1.0";
   var LAST_UPDATE_KEY = "ministry-last-update";
   var PENDING_UPDATE_KEY = "ministry-pending-update";
+  var LAST_BACKUP_KEY = "ministry-last-backup";
+  // How long a backup counts as "fresh enough" to update without re-saving.
+  var BACKUP_FRESH_WINDOW = 15*60*1000;
 
   function safeGetLocal(key){
     try{ return localStorage.getItem(key); }catch(e){ return null; }
@@ -1608,6 +1632,27 @@
     });
   }
 
+  // A backup counts as covering this update if it was made recently (fresh session)
+  // — an old backup from weeks ago wouldn't include entries added since.
+  function hasFreshBackup(){
+    var raw = safeGetLocal(LAST_BACKUP_KEY);
+    if(!raw) return false;
+    var t0 = new Date(raw).getTime();
+    return !isNaN(t0) && (Date.now() - t0) < BACKUP_FRESH_WINDOW;
+  }
+
+  // Keeps the modal's "Обновить" button locked until the person has saved a
+  // backup in this session, and reflects that status in the helper text.
+  function refreshBackupGateUI(){
+    var confirmBtn = document.getElementById("updateConfirm");
+    var status = document.getElementById("updateBackupStatus");
+    var fresh = hasFreshBackup();
+    confirmBtn.disabled = !fresh;
+    confirmBtn.title = fresh ? "" : t("updateBackupPending");
+    status.textContent = fresh ? t("updateBackupDone") : "";
+    status.classList.toggle("ok", fresh);
+  }
+
   function openUpdateModal(info){
     document.getElementById("updateVersionLine").textContent =
       t("updateAvailableText")+": "+info.version+" (" + t("currentVersionLabel").toLowerCase() + ": "+APP_VERSION+")";
@@ -1626,6 +1671,7 @@
     } else {
       block.style.display = "none";
     }
+    refreshBackupGateUI();
     document.getElementById("updateOverlay").classList.add("open");
   }
   function closeUpdateModal(){
@@ -1634,8 +1680,11 @@
 
   // Installs the update: drops the old service worker + caches, then reloads from network.
   // User data lives in localStorage / app storage and is never touched here.
+  // A fresh backup is required first (see refreshBackupGateUI) so the person
+  // always has a way back if something goes wrong mid-update.
   async function performUpdate(){
     if(!pendingUpdateInfo) return;
+    if(!hasFreshBackup()){ refreshBackupGateUI(); return; }
     var btn = document.getElementById("updateConfirm");
     var bannerBtn = document.getElementById("ubUpdate");
     btn.disabled = true;
@@ -1660,7 +1709,7 @@
       location.replace(target + (target.indexOf("?")>=0 ? "&" : "?") + "v=" + Date.now());
     }catch(err){
       safeRemoveLocal(PENDING_UPDATE_KEY);
-      btn.disabled = false;
+      btn.disabled = !hasFreshBackup();
       btn.textContent = t("btnUpdateNow");
       bannerBtn.disabled = false;
       bannerBtn.textContent = t("btnUpdateNow");
@@ -1754,9 +1803,17 @@
     downloadFile("\uFEFF"+toCsv(), "service-log_"+todayKey()+".csv", "text/csv;charset=utf-8");
     toast(t("toastCsvSaved"));
   };
+  // Shared by the settings backup button and the pre-update safety prompt, so
+  // both paths write the same file and update the same "last backup" marker.
+  function buildBackupPayload(){
+    return JSON.stringify({schemaVersion:ServiceTimerCore.SCHEMA_VERSION,exportedAt:new Date().toISOString(),appVersion:APP_VERSION,sessions:state.sessions,settings:state.settings}, null, 2);
+  }
+  function saveBackupNow(){
+    downloadFile(buildBackupPayload(), "backup_service-log_"+todayKey()+".json", "application/json");
+    safeSetLocal(LAST_BACKUP_KEY, new Date().toISOString());
+  }
   document.getElementById("btnBackup").onclick = function(){
-    var payload = JSON.stringify({schemaVersion:ServiceTimerCore.SCHEMA_VERSION,exportedAt:new Date().toISOString(),appVersion:APP_VERSION,sessions:state.sessions,settings:state.settings}, null, 2);
-    downloadFile(payload, "backup_service-log_"+todayKey()+".json", "application/json");
+    saveBackupNow();
     toast(t("toastBackupSaved"));
   };
   document.getElementById("btnImportTrigger").onclick = function(){ document.getElementById("fileImport").click(); };
@@ -1796,7 +1853,19 @@
   document.getElementById("updateCancel").onclick = closeUpdateModal;
   document.getElementById("ubLater").onclick = snoozeUpdate;
   document.getElementById("ubClose").onclick = snoozeUpdate;
-  document.getElementById("ubUpdate").onclick = performUpdate;
+  document.getElementById("updateBackupBtn").onclick = function(){
+    saveBackupNow();
+    toast(t("toastBackupSaved"));
+    refreshBackupGateUI();
+  };
+  // The banner has no room for the full backup checklist: if there's no fresh
+  // backup yet, "Обновить" opens the modal (which has the checklist) instead
+  // of updating straight away.
+  document.getElementById("ubUpdate").onclick = function(){
+    if(hasFreshBackup()){ performUpdate(); return; }
+    hideUpdateBanner();
+    openUpdateModal(pendingUpdateInfo);
+  };
   document.getElementById("updateConfirm").onclick = performUpdate;
   document.getElementById("manCancel").onclick = closeManualModal;
   document.getElementById("manSave").onclick = saveManualEntry;
