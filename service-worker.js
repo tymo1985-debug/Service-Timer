@@ -1,7 +1,7 @@
 "use strict";
 
 const CACHE_PREFIX = "service-timer-";
-const CACHE_NAME = CACHE_PREFIX + "v2.2.0";
+const CACHE_NAME = CACHE_PREFIX + "v2.3.0";
 const APP_SHELL = ["./", "./index.html", "./app-core.js", "./manifest.json", "./version.json", "./icon-192.png", "./icon-512.png", "./favicon.png", "./apple-touch-icon.png"];
 
 self.addEventListener("install", event => {

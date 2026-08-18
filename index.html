@@ -220,8 +220,9 @@
   .update-backup-status.ok{ color:var(--teal); font-weight:600; }
 
   .empty-note{ text-align:center; color:var(--ink-faint); font-size:13px; padding:30px 0; }
-  .toast{ position:fixed; bottom:96px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); font-size:13px; padding:9px 16px; border-radius:10px; opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:60; }
-  .toast.show{ opacity:1; }
+  .toast{ position:fixed; bottom:96px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--paper); font-size:13px; padding:9px 16px; border-radius:10px; opacity:0; pointer-events:none; transition:opacity .25s ease; z-index:60; max-width:88vw; text-align:center; }
+  .toast.show{ opacity:1; pointer-events:auto; }
+  .toast .toast-undo{ border:none; background:none; color:var(--teal-mid); font-weight:700; font-size:13px; font-family:inherit; cursor:pointer; padding:0; margin-left:4px; text-decoration:underline; }
   .update-banner{ position:fixed; left:12px; right:12px; bottom:84px; max-width:456px; margin:0 auto; background:var(--paper); border:1px solid var(--teal-mid); border-radius:16px; box-shadow:0 6px 24px rgba(20,30,26,0.18); padding:14px 16px 12px; z-index:55; opacity:0; transform:translateY(14px); pointer-events:none; transition:opacity .28s ease, transform .28s ease; }
   .update-banner.show{ opacity:1; transform:translateY(0); pointer-events:auto; }
   .update-banner .ub-top{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
@@ -235,6 +236,28 @@
   .update-banner .ub-actions button{ flex:1; border-radius:10px; padding:10px; font-size:13px; font-family:inherit; cursor:pointer; }
   .update-banner .ub-later{ border:1px solid var(--line); background:var(--paper-2); color:var(--ink-soft); }
   .update-banner .ub-update{ border:none; background:var(--teal); color:#fff; font-weight:600; }
+
+  .trend-card{ background:var(--paper); border:1px solid var(--line); border-radius:var(--radius); padding:14px 14px 10px; margin-top:12px; }
+  .trend-card .trend-head{ font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:8px; }
+  #trendChart{ width:100%; height:100px; display:block; }
+  .trend-bar{ fill:var(--teal-mid); }
+  .trend-bar.met{ fill:var(--teal); }
+  .trend-bar.empty{ fill:var(--line); }
+  .trend-goal-line{ stroke:var(--amber); stroke-width:1.5; stroke-dasharray:4 3; }
+  .trend-label{ font-size:8.5px; fill:var(--ink-faint); font-family:inherit; }
+  .trend-value{ font-size:8px; fill:var(--ink-soft); font-family:inherit; font-weight:600; }
+
+  /* Generic dismissible inline notice (install prompt, backup reminder) — sits inline
+     in the page flow above the timer card, unlike the fixed-position toast. */
+  .notice-card{ background:var(--teal-light); border:1px solid var(--teal-mid); border-radius:12px; padding:12px 14px; margin-bottom:12px; }
+  .notice-card .nc-top{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .notice-card .nc-text{ font-size:13px; color:var(--ink); line-height:1.4; }
+  .notice-card .nc-close{ border:none; background:none; color:var(--ink-faint); font-size:18px; line-height:1; cursor:pointer; padding:0 0 0 8px; }
+  .notice-card .nc-actions{ display:flex; gap:8px; margin-top:10px; }
+  .notice-card .nc-actions button{ border-radius:9px; padding:8px 12px; font-size:12.5px; font-family:inherit; cursor:pointer; }
+  .notice-card .nc-primary{ border:none; background:var(--teal); color:#fff; font-weight:600; }
+  .notice-card .nc-ghost{ border:1px solid var(--teal-mid); background:transparent; color:var(--teal-deep); }
+  .storage-status{ font-size:11px; color:var(--ink-faint); margin-top:6px; }
 </style>
 </head>
 <body>
@@ -247,6 +270,7 @@
   <main>
     <!-- MAIN VIEW -->
     <section class="view active" id="view-main">
+      <div id="mainNotices"></div>
       <div class="timer-card">
         <div class="timer-ring-wrap">
           <svg viewBox="0 0 230 230">
@@ -279,6 +303,11 @@
         <div class="goal-top"><span data-i18n="goalLabel">Цель на месяц</span><b id="goalText">0 / 30 ч</b></div>
         <div class="goal-bar"><div class="goal-fill" id="goalFill" style="width:0%"></div></div>
         <div class="goal-top" style="margin:8px 0 0;"><span id="goalRemainingLabel"></span><b id="goalRemaining">—</b></div>
+      </div>
+
+      <div class="trend-card">
+        <div class="trend-head" data-i18n="trendTitle">Динамика по месяцам</div>
+        <svg id="trendChart" viewBox="0 0 300 110" preserveAspectRatio="none"></svg>
       </div>
     </section>
 
@@ -356,6 +385,8 @@
         </div>
         <input type="file" id="fileImport" accept="application/json" style="display:none">
         <div class="hint" data-i18n="backupHint">Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.</div>
+        <div class="storage-status" id="lastBackupStatus"></div>
+        <div class="storage-status" id="persistStorageStatus"></div>
       </div>
 
       <div class="set-row">
@@ -505,6 +536,21 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="storageFullOverlay" role="dialog" aria-modal="true" aria-labelledby="storageFullTitle">
+  <div class="modal" tabindex="-1">
+    <h3 id="storageFullTitle" data-i18n="storageFullTitle">Хранилище переполнено</h3>
+    <div class="field">
+      <div style="font-size:14px; color:var(--ink-soft); line-height:1.5;" data-i18n="storageFullText">
+        Браузеру не хватает места, чтобы сохранить последнее изменение. Оно осталось только в открытой вкладке — сохраните резервную копию прямо сейчас, чтобы не потерять его, а затем освободите место (например, удалите старые неиспользуемые записи).
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="storageFullClose" data-i18n="btnClose">Закрыть</button>
+      <button class="primary" id="storageFullBackupBtn" data-i18n="btnSaveBackupNow">Сохранить резервную копию</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="app-core.js"></script>
@@ -525,13 +571,14 @@
       btnStart:"▶ Начать служение", btnStop:"⏹ Закончить", btnPause:"⏸ Пауза", btnResume:"▶ Продолжить",
       btnAddNote:"+ Добавить заметку", btnAddManual:"+ Добавить запись вручную",
       statToday:"Сегодня", statMonth:"Этот месяц", statLastMonth:"Прошлый месяц",
-      goalLabel:"Цель на месяц", goalRemainingLabel:"Осталось", goalSurplusLabel:"Сверх нормы", calMonthTotal:"Всего за месяц", sectionAllEntries:"Все записи",
+      goalLabel:"Цель на месяц", goalRemainingLabel:"Осталось", goalSurplusLabel:"Сверх нормы", calMonthTotal:"Всего за месяц", sectionAllEntries:"Все записи", trendTitle:"Динамика по месяцам",
       emptyHistory:"Записей пока нет", emptyDayDetail:"Нет записей за этот день",
       entriesShort:"зап.", expandAllMonths:"Развернуть все месяцы", collapseAllMonths:"Свернуть все месяцы",
       histSelect:"выбрать", actEdit:"Изменить", actNote:"Заметка", actExcludeOn:"Не учитывать", actExcludeOff:"Учитывать", actSplit:"Разделить", actDelete:"Удалить",
       excludedNote:"Не учитывается в итоге месяца",
       mergeSelected:"Выбрано записей: 2", mergeBtn:"Объединить",
       confirmDelete:"Удалить эту запись?", confirmRestoreBackup:"Заменить текущие данные содержимым резервной копии?",
+      toastDeleted:"Запись удалена", btnUndo:"Отменить", toastRestoredEntry:"Запись восстановлена",
       setGoalLabel:"Цель на месяц (часы)", setThemeLabel:"Тема", themeLight:"Светлая", themeDark:"Тёмная", themeAuto:"Авто",
       setFormatLabel:"Формат времени", format24:"24 ч", format12:"12 ч (AM/PM)", setLangLabel:"Язык", setAccentLabel:"Акцентный цвет",
       setDataLabel:"Данные", btnExportCsv:"Экспорт CSV", btnBackup:"Резервная копия", btnImportTrigger:"Восстановить из копии",
@@ -567,6 +614,14 @@
       toastNeedDateStart:"Укажите дату и время начала", toastNeedManualFields:"Укажите дату, начало и окончание",
       toastStartFirst:"Сначала начните служение",
       toastSaveDataFail:"Не удалось сохранить данные", toastSaveSettingsFail:"Не удалось сохранить настройки",
+      storageFullTitle:"Хранилище переполнено",
+      storageFullText:"Браузеру не хватает места, чтобы сохранить последнее изменение. Оно осталось только в открытой вкладке — сохраните резервную копию прямо сейчас, чтобы не потерять его, а затем освободите место (например, удалите старые неиспользуемые записи).",
+      btnClose:"Закрыть",
+      lastBackupNever:"Резервная копия ещё не создавалась", lastBackupPrefix:"Последняя копия:", lastBackupToday:"сегодня", daysAgoSuffix:"дн. назад",
+      persistStoragePrefix:"Защита хранилища от очистки браузером:", persistStorageYes:"включена", persistStorageNo:"не выдана браузером",
+      backupReminderText:"Вы давно не сохраняли резервную копию данных. Рекомендуем сделать это, чтобы не потерять записи.",
+      installBannerText:"Установите приложение на главный экран — оно будет открываться быстрее и работать как обычное приложение.",
+      btnInstallApp:"Установить",
       toastCsvSaved:"CSV сохранён", toastBackupSaved:"Резервная копия сохранена",
       toastRestored:"Данные восстановлены", toastImportFail:"Не удалось прочитать файл",
       csv:["Дата","Начало","Окончание","Длительность (мин)","Территория","Напарник","Теги","Комментарий","Не учитывается"],
@@ -584,13 +639,14 @@
       btnStart:"▶ Почати служіння", btnStop:"⏹ Закінчити", btnPause:"⏸ Пауза", btnResume:"▶ Продовжити",
       btnAddNote:"+ Додати нотатку", btnAddManual:"+ Додати запис вручну",
       statToday:"Сьогодні", statMonth:"Цей місяць", statLastMonth:"Минулий місяць",
-      goalLabel:"Ціль на місяць", goalRemainingLabel:"Залишилось", goalSurplusLabel:"Понад норму", calMonthTotal:"Усього за місяць", sectionAllEntries:"Усі записи",
+      goalLabel:"Ціль на місяць", goalRemainingLabel:"Залишилось", goalSurplusLabel:"Понад норму", calMonthTotal:"Усього за місяць", sectionAllEntries:"Усі записи", trendTitle:"Динаміка за місяцями",
       emptyHistory:"Записів поки немає", emptyDayDetail:"Немає записів за цей день",
       entriesShort:"зап.", expandAllMonths:"Розгорнути всі місяці", collapseAllMonths:"Згорнути всі місяці",
       histSelect:"вибрати", actEdit:"Змінити", actNote:"Нотатка", actExcludeOn:"Не враховувати", actExcludeOff:"Враховувати", actSplit:"Розділити", actDelete:"Видалити",
       excludedNote:"Не враховується в підсумку місяця",
       mergeSelected:"Обрано записів: 2", mergeBtn:"Об'єднати",
       confirmDelete:"Видалити цей запис?", confirmRestoreBackup:"Замінити поточні дані вмістом резервної копії?",
+      toastDeleted:"Запис видалено", btnUndo:"Скасувати", toastRestoredEntry:"Запис відновлено",
       setGoalLabel:"Ціль на місяць (години)", setThemeLabel:"Тема", themeLight:"Світла", themeDark:"Темна", themeAuto:"Авто",
       setFormatLabel:"Формат часу", format24:"24 год", format12:"12 год (AM/PM)", setLangLabel:"Мова", setAccentLabel:"Акцентний колір",
       setDataLabel:"Дані", btnExportCsv:"Експорт CSV", btnBackup:"Резервна копія", btnImportTrigger:"Відновити з копії",
@@ -626,6 +682,14 @@
       toastNeedDateStart:"Вкажіть дату і час початку", toastNeedManualFields:"Вкажіть дату, початок і закінчення",
       toastStartFirst:"Спочатку розпочніть служіння",
       toastSaveDataFail:"Не вдалося зберегти дані", toastSaveSettingsFail:"Не вдалося зберегти налаштування",
+      storageFullTitle:"Сховище переповнене",
+      storageFullText:"Браузеру не вистачає місця, щоб зберегти останню зміну. Вона залишилась лише у відкритій вкладці — збережіть резервну копію прямо зараз, щоб не втратити її, а потім звільніть місце (наприклад, видаліть старі непотрібні записи).",
+      btnClose:"Закрити",
+      lastBackupNever:"Резервну копію ще не створювали", lastBackupPrefix:"Остання копія:", lastBackupToday:"сьогодні", daysAgoSuffix:"дн. тому",
+      persistStoragePrefix:"Захист сховища від очищення браузером:", persistStorageYes:"увімкнено", persistStorageNo:"не надано браузером",
+      backupReminderText:"Ви давно не зберігали резервну копію даних. Радимо зробити це, щоб не втратити записи.",
+      installBannerText:"Встановіть застосунок на головний екран — він відкриватиметься швидше і працюватиме як звичайний застосунок.",
+      btnInstallApp:"Встановити",
       toastCsvSaved:"CSV збережено", toastBackupSaved:"Резервну копію збережено",
       toastRestored:"Дані відновлено", toastImportFail:"Не вдалося прочитати файл",
       csv:["Дата","Початок","Закінчення","Тривалість (хв)","Територія","Напарник","Теги","Коментар","Не враховується"],
@@ -643,13 +707,14 @@
       btnStart:"▶ Dienst beginnen", btnStop:"⏹ Beenden", btnPause:"⏸ Pause", btnResume:"▶ Fortsetzen",
       btnAddNote:"+ Notiz hinzufügen", btnAddManual:"+ Eintrag manuell hinzufügen",
       statToday:"Heute", statMonth:"Dieser Monat", statLastMonth:"Letzter Monat",
-      goalLabel:"Monatsziel", goalRemainingLabel:"Verbleibend", goalSurplusLabel:"Über dem Ziel", calMonthTotal:"Monatssumme", sectionAllEntries:"Alle Einträge",
+      goalLabel:"Monatsziel", goalRemainingLabel:"Verbleibend", goalSurplusLabel:"Über dem Ziel", calMonthTotal:"Monatssumme", sectionAllEntries:"Alle Einträge", trendTitle:"Verlauf nach Monaten",
       emptyHistory:"Noch keine Einträge", emptyDayDetail:"Keine Einträge an diesem Tag",
       entriesShort:"Einträge", expandAllMonths:"Alle Monate ausklappen", collapseAllMonths:"Alle Monate einklappen",
       histSelect:"auswählen", actEdit:"Bearbeiten", actNote:"Notiz", actExcludeOn:"Nicht zählen", actExcludeOff:"Zählen", actSplit:"Teilen", actDelete:"Löschen",
       excludedNote:"Wird nicht in die Monatssumme gezählt",
       mergeSelected:"2 Einträge ausgewählt", mergeBtn:"Zusammenführen",
       confirmDelete:"Diesen Eintrag löschen?", confirmRestoreBackup:"Aktuelle Daten durch das Backup ersetzen?",
+      toastDeleted:"Eintrag gelöscht", btnUndo:"Rückgängig", toastRestoredEntry:"Eintrag wiederhergestellt",
       setGoalLabel:"Monatsziel (Stunden)", setThemeLabel:"Design", themeLight:"Hell", themeDark:"Dunkel", themeAuto:"Automatisch",
       setFormatLabel:"Zeitformat", format24:"24 Std", format12:"12 Std (AM/PM)", setLangLabel:"Sprache", setAccentLabel:"Akzentfarbe",
       setDataLabel:"Daten", btnExportCsv:"CSV exportieren", btnBackup:"Backup erstellen", btnImportTrigger:"Aus Backup wiederherstellen",
@@ -685,6 +750,14 @@
       toastNeedDateStart:"Bitte Datum und Startzeit angeben", toastNeedManualFields:"Bitte Datum, Beginn und Ende angeben",
       toastStartFirst:"Bitte zuerst den Dienst beginnen",
       toastSaveDataFail:"Daten konnten nicht gespeichert werden", toastSaveSettingsFail:"Einstellungen konnten nicht gespeichert werden",
+      storageFullTitle:"Speicher ist voll",
+      storageFullText:"Der Browser hat nicht genug Platz, um die letzte Änderung zu speichern. Sie existiert nur noch in diesem geöffneten Tab — sichern Sie jetzt ein Backup, bevor sie verloren geht, und schaffen Sie danach Platz (z. B. alte, nicht mehr benötigte Einträge löschen).",
+      btnClose:"Schließen",
+      lastBackupNever:"Noch kein Backup erstellt", lastBackupPrefix:"Letztes Backup:", lastBackupToday:"heute", daysAgoSuffix:"Tag(e) her",
+      persistStoragePrefix:"Schutz vor automatischem Löschen durch den Browser:", persistStorageYes:"aktiv", persistStorageNo:"vom Browser nicht gewährt",
+      backupReminderText:"Sie haben schon länger kein Backup Ihrer Daten gespeichert. Wir empfehlen, das jetzt zu tun, um keine Einträge zu verlieren.",
+      installBannerText:"Installieren Sie die App auf dem Startbildschirm — sie startet schneller und verhält sich wie eine normale App.",
+      btnInstallApp:"Installieren",
       toastCsvSaved:"CSV gespeichert", toastBackupSaved:"Backup gespeichert",
       toastRestored:"Daten wiederhergestellt", toastImportFail:"Datei konnte nicht gelesen werden",
       csv:["Datum","Beginn","Ende","Dauer (Min)","Gebiet","Partner","Tags","Kommentar","Nicht gezählt"],
@@ -702,13 +775,14 @@
       btnStart:"▶ Start service", btnStop:"⏹ End", btnPause:"⏸ Pause", btnResume:"▶ Resume",
       btnAddNote:"+ Add note", btnAddManual:"+ Add manual entry",
       statToday:"Today", statMonth:"This month", statLastMonth:"Last month",
-      goalLabel:"Monthly goal", goalRemainingLabel:"Remaining", goalSurplusLabel:"Over goal", calMonthTotal:"Month total", sectionAllEntries:"All entries",
+      goalLabel:"Monthly goal", goalRemainingLabel:"Remaining", goalSurplusLabel:"Over goal", calMonthTotal:"Month total", sectionAllEntries:"All entries", trendTitle:"Trend by month",
       emptyHistory:"No entries yet", emptyDayDetail:"No entries for this day",
       entriesShort:"entries", expandAllMonths:"Expand all months", collapseAllMonths:"Collapse all months",
       histSelect:"select", actEdit:"Edit", actNote:"Note", actExcludeOn:"Exclude", actExcludeOff:"Include", actSplit:"Split", actDelete:"Delete",
       excludedNote:"Not counted in the monthly total",
       mergeSelected:"2 entries selected", mergeBtn:"Merge",
       confirmDelete:"Delete this entry?", confirmRestoreBackup:"Replace current data with the backup contents?",
+      toastDeleted:"Entry deleted", btnUndo:"Undo", toastRestoredEntry:"Entry restored",
       setGoalLabel:"Monthly goal (hours)", setThemeLabel:"Theme", themeLight:"Light", themeDark:"Dark", themeAuto:"Auto",
       setFormatLabel:"Time format", format24:"24h", format12:"12h (AM/PM)", setLangLabel:"Language", setAccentLabel:"Accent color",
       setDataLabel:"Data", btnExportCsv:"Export CSV", btnBackup:"Create backup", btnImportTrigger:"Restore from backup",
@@ -744,6 +818,14 @@
       toastNeedDateStart:"Please enter a date and start time", toastNeedManualFields:"Please enter date, start and end",
       toastStartFirst:"Start a service first",
       toastSaveDataFail:"Failed to save data", toastSaveSettingsFail:"Failed to save settings",
+      storageFullTitle:"Storage is full",
+      storageFullText:"Your browser doesn't have room to save the last change. It only exists in this open tab right now — save a backup immediately so you don't lose it, then free up space (e.g. delete old entries you no longer need).",
+      btnClose:"Close",
+      lastBackupNever:"No backup yet", lastBackupPrefix:"Last backup:", lastBackupToday:"today", daysAgoSuffix:"day(s) ago",
+      persistStoragePrefix:"Protection from browser auto-clearing:", persistStorageYes:"enabled", persistStorageNo:"not granted by browser",
+      backupReminderText:"You haven't saved a backup of your data in a while. We recommend doing that now so you don't lose any entries.",
+      installBannerText:"Install the app on your home screen — it'll open faster and behave like a regular app.",
+      btnInstallApp:"Install",
       toastCsvSaved:"CSV saved", toastBackupSaved:"Backup saved",
       toastRestored:"Data restored", toastImportFail:"Couldn't read the file",
       csv:["Date","Start","End","Duration (min)","Territory","Partner","Tags","Comment","Excluded"],
@@ -771,10 +853,30 @@
   function uid(){ return ServiceTimerCore.uid(); }
   function pad(n){ return String(n).padStart(2,"0"); }
   function escapeHtml(value){ return String(value).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+  var toastHideHandle = null;
   function toast(msg){
-    var t = document.getElementById("toast");
-    t.textContent = msg; t.classList.add("show");
-    setTimeout(function(){ t.classList.remove("show"); }, 1800);
+    var el = document.getElementById("toast");
+    if(toastHideHandle) clearTimeout(toastHideHandle);
+    el.textContent = msg; el.classList.add("show");
+    toastHideHandle = setTimeout(function(){ el.classList.remove("show"); }, 1800);
+  }
+  // Same toast, but with an inline action button (e.g. "Undo") and a longer
+  // window before it disappears, since the person needs a moment to react.
+  function toastWithAction(msg, actionLabel, onAction){
+    var el = document.getElementById("toast");
+    if(toastHideHandle) clearTimeout(toastHideHandle);
+    el.textContent = msg + " ";
+    var btn = document.createElement("button");
+    btn.className = "toast-undo";
+    btn.textContent = actionLabel;
+    btn.onclick = function(){
+      el.classList.remove("show");
+      if(toastHideHandle) clearTimeout(toastHideHandle);
+      onAction();
+    };
+    el.appendChild(btn);
+    el.classList.add("show");
+    toastHideHandle = setTimeout(function(){ el.classList.remove("show"); }, 6000);
   }
 
   function applyI18n(){
@@ -796,17 +898,37 @@
     catch(e){ state.sessions=[]; state.settings=Object.assign({},ServiceTimerCore.DEFAULT_SETTINGS); state.goalNotes={}; toast(t("toastImportFail")); }
     applyTheme();
   }
+  // Storage failures come in two flavors that need very different responses:
+  // a full disk/quota (person needs to know NOW and be offered a way out),
+  // vs. anything else transient (a quiet toast is enough).
+  function isQuotaError(e){
+    return !!e && (e.name==="QuotaExceededError" || e.code===22 || e.code===1014);
+  }
+  function handleStorageError(e, fallbackKey){
+    if(isQuotaError(e)) openStorageFullModal();
+    else toast(t(fallbackKey));
+  }
+  // A toast alone isn't enough for "storage full": it disappears in 2s and the
+  // person needs an actual way out (backup) before they lose anything else.
+  function openStorageFullModal(){
+    var overlay = document.getElementById("storageFullOverlay");
+    if(overlay.classList.contains("open")) return; // don't stack repeated failures
+    overlay.classList.add("open");
+  }
+  function closeStorageFullModal(){
+    document.getElementById("storageFullOverlay").classList.remove("open");
+  }
   async function saveSessions(){
     try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings,goalNotes:state.goalNotes}); state.sessions=saved.sessions; }
-    catch(e){ toast(t("toastSaveDataFail")); }
+    catch(e){ handleStorageError(e, "toastSaveDataFail"); }
   }
   async function saveSettings(){
     try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings,goalNotes:state.goalNotes}); state.settings=saved.settings; }
-    catch(e){ toast(t("toastSaveSettingsFail")); }
+    catch(e){ handleStorageError(e, "toastSaveSettingsFail"); }
   }
   async function saveGoalNotes(){
     try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings,goalNotes:state.goalNotes}); state.goalNotes=saved.goalNotes; }
-    catch(e){ toast(t("toastSaveDataFail")); }
+    catch(e){ handleStorageError(e, "toastSaveDataFail"); }
   }
 
   // ---------- date helpers ----------
@@ -1063,6 +1185,42 @@
       remainVal.textContent = fmtDurationShort(goalMs-sumMonth);
       remainVal.style.color = "";
     }
+    renderTrendChart();
+  }
+
+  // Hand-rolled bar chart (no charting library, consistent with the rest of the
+  // app): last 6 months' totals against a dashed goal line, so progress over
+  // time is visible at a glance instead of only as three text numbers.
+  function renderTrendChart(){
+    var svg = document.getElementById("trendChart");
+    if(!svg) return;
+    var MONTHS = 6;
+    var curKey = todayKey().slice(0,7);
+    var keys = [];
+    for(var i=MONTHS-1;i>=0;i--) keys.push(monthKeyOffset(curKey,-i));
+    var goalMs = state.settings.goalHours*3600000;
+    var totals = keys.map(monthTotalMs);
+    var maxVal = Math.max(goalMs, Math.max.apply(null,totals), 1);
+    var W=300, H=110, padT=14, padB=20, gap=10;
+    var barW = (W - gap*(MONTHS-1)) / MONTHS;
+    var chartH = H - padT - padB;
+    var goalY = padT + chartH * (1 - Math.min(1, goalMs/maxVal));
+    var parts = [];
+    parts.push("<line x1='0' y1='"+goalY.toFixed(1)+"' x2='"+W+"' y2='"+goalY.toFixed(1)+"' class='trend-goal-line'></line>");
+    keys.forEach(function(mk, idx){
+      var val = totals[idx];
+      var h = chartH * Math.min(1, val/maxVal);
+      var x = idx*(barW+gap);
+      var y = H - padB - h;
+      var met = goalMs>0 && val >= goalMs;
+      var cls = val<=0 ? "trend-bar empty" : (met ? "trend-bar met" : "trend-bar");
+      var label = (t("months")[Number(mk.split("-")[1])-1]||"").slice(0,3);
+      parts.push(
+        "<rect x='"+x.toFixed(1)+"' y='"+y.toFixed(1)+"' width='"+barW.toFixed(1)+"' height='"+Math.max(h,2).toFixed(1)+"' rx='3' class='"+cls+"'></rect>"+
+        "<text x='"+(x+barW/2).toFixed(1)+"' y='"+(H-6)+"' text-anchor='middle' class='trend-label'>"+escapeHtml(label)+"</text>"
+      );
+    });
+    svg.innerHTML = parts.join("");
   }
 
   function startTicking(){
@@ -1165,11 +1323,116 @@
     if(btn) btn.onclick = function(){ openGoalReviewModal(monthKey); };
   }
 
+  // ---------- backup reminder banner ----------
+  // A gentle nudge on the main screen if no backup was made in a while — separate
+  // from the mandatory pre-update backup gate, since data can also be lost from
+  // a wiped browser profile, a factory reset, etc., not just app updates.
+  var BACKUP_REMINDER_DISMISS_KEY = "ministry-backup-reminder-dismissed";
+  var BACKUP_REMINDER_STALE_DAYS = 30;
+  var BACKUP_REMINDER_SNOOZE_DAYS = 7;
+
+  function daysSince(iso){
+    var t0 = iso ? new Date(iso).getTime() : NaN;
+    if(isNaN(t0)) return Infinity;
+    return (Date.now()-t0)/86400000;
+  }
+  function maybeShowBackupReminder(){
+    if(!state.sessions.length) return; // nothing to lose yet
+    if(document.getElementById("updateOverlay").classList.contains("open")) return;
+    if(document.getElementById("goalReviewOverlay").classList.contains("open")) return;
+    if(daysSince(safeGetLocal(LAST_BACKUP_KEY)) < BACKUP_REMINDER_STALE_DAYS) return;
+    if(daysSince(safeGetLocal(BACKUP_REMINDER_DISMISS_KEY)) < BACKUP_REMINDER_SNOOZE_DAYS) return;
+    renderBackupReminderBanner();
+  }
+  function renderBackupReminderBanner(){
+    var box = document.getElementById("mainNotices");
+    if(!box || document.getElementById("backupReminderCard")) return;
+    var card = document.createElement("div");
+    card.className = "notice-card";
+    card.id = "backupReminderCard";
+    card.innerHTML =
+      "<div class='nc-top'><div class='nc-text'>"+t("backupReminderText")+"</div>"+
+        "<button class='nc-close' id='backupReminderClose' aria-label='"+t("btnClose")+"'>×</button></div>"+
+      "<div class='nc-actions'>"+
+        "<button class='nc-ghost' id='backupReminderLater'>"+t("btnLater")+"</button>"+
+        "<button class='nc-primary' id='backupReminderSave'>"+t("btnSaveBackupNow")+"</button>"+
+      "</div>";
+    box.appendChild(card);
+    function dismiss(){ safeSetLocal(BACKUP_REMINDER_DISMISS_KEY, new Date().toISOString()); card.remove(); }
+    document.getElementById("backupReminderClose").onclick = dismiss;
+    document.getElementById("backupReminderLater").onclick = dismiss;
+    document.getElementById("backupReminderSave").onclick = function(){
+      saveBackupNow();
+      toast(t("toastBackupSaved"));
+      dismiss();
+      renderStorageStatus();
+    };
+  }
+
+  // ---------- "Add to Home Screen" banner ----------
+  // Chrome/Edge fire beforeinstallprompt and let us defer + replay it from our
+  // own button; Safari/iOS never fire it (no banner shown there — nothing to hook).
+  var deferredInstallPrompt = null;
+  var INSTALL_BANNER_DISMISS_KEY = "ministry-install-banner-dismissed";
+  var INSTALL_BANNER_SNOOZE_DAYS = 14;
+  function isStandalone(){
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  }
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    maybeShowInstallBanner();
+  });
+  window.addEventListener("appinstalled", function(){
+    deferredInstallPrompt = null;
+    var card = document.getElementById("installBannerCard");
+    if(card) card.remove();
+  });
+  function maybeShowInstallBanner(){
+    if(!deferredInstallPrompt || isStandalone()) return;
+    if(document.getElementById("updateOverlay").classList.contains("open")) return;
+    if(document.getElementById("goalReviewOverlay").classList.contains("open")) return;
+    if(daysSince(safeGetLocal(INSTALL_BANNER_DISMISS_KEY)) < INSTALL_BANNER_SNOOZE_DAYS) return;
+    renderInstallBanner();
+  }
+  function renderInstallBanner(){
+    var box = document.getElementById("mainNotices");
+    if(!box || document.getElementById("installBannerCard")) return;
+    var card = document.createElement("div");
+    card.className = "notice-card";
+    card.id = "installBannerCard";
+    card.innerHTML =
+      "<div class='nc-top'><div class='nc-text'>"+t("installBannerText")+"</div>"+
+        "<button class='nc-close' id='installBannerClose' aria-label='"+t("btnClose")+"'>×</button></div>"+
+      "<div class='nc-actions'>"+
+        "<button class='nc-ghost' id='installBannerLater'>"+t("btnLater")+"</button>"+
+        "<button class='nc-primary' id='installBannerInstall'>"+t("btnInstallApp")+"</button>"+
+      "</div>";
+    box.appendChild(card);
+    function dismiss(){ safeSetLocal(INSTALL_BANNER_DISMISS_KEY, new Date().toISOString()); card.remove(); }
+    document.getElementById("installBannerClose").onclick = dismiss;
+    document.getElementById("installBannerLater").onclick = dismiss;
+    document.getElementById("installBannerInstall").onclick = function(){
+      if(!deferredInstallPrompt){ dismiss(); return; }
+      var promptEvent = deferredInstallPrompt;
+      deferredInstallPrompt = null;
+      promptEvent.prompt();
+      promptEvent.userChoice.finally(function(){ card.remove(); });
+    };
+  }
+
   // ---------- actions ----------
+  // Short, distinct vibration patterns so Start/Pause-Resume/Stop feel different
+  // by touch alone — a no-op (silently ignored) on devices/browsers without support.
+  function haptic(pattern){
+    if(navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
+  }
+
   async function startSession(){
     state.sessions.push({ id: uid(), start: new Date().toISOString(), end: null, paused:false, pausedAt:null, pausedMs:0, elapsedMs:null, note: {territory:"",partner:"",comment:"",tags:[]}, excluded:false });
     await saveSessions();
     renderTimer();
+    haptic(25);
     toast(t("toastServiceStarted"));
   }
   async function pauseSession(){
@@ -1179,6 +1442,7 @@
     act.pausedAt = new Date().toISOString();
     await saveSessions();
     renderTimer();
+    haptic([15,60,15]);
   }
   async function resumeSession(){
     var act = activeSession();
@@ -1189,6 +1453,7 @@
     act.pausedAt = null;
     await saveSessions();
     renderTimer();
+    haptic(25);
   }
   async function stopSession(){
     var act = activeSession();
@@ -1201,6 +1466,7 @@
     }
     act.end = new Date().toISOString();
     act.elapsedMs = Math.max(0, new Date(act.end)-new Date(act.start)-(act.pausedMs||0));
+    haptic([20,40,20,40,30]);
     await saveSessions();
     renderTimer();
     refreshAll();
@@ -1629,8 +1895,18 @@
     if(el.dataset.act === "split") splitSession(el.dataset.id);
     if(el.dataset.act === "delete"){
       if(confirm(t("confirmDelete"))){
-        state.sessions = state.sessions.filter(function(s){ return s.id!==el.dataset.id; });
+        var delId = el.dataset.id;
+        var delIndex = state.sessions.findIndex(function(s){ return s.id===delId; });
+        if(delIndex === -1) return;
+        var removed = state.sessions[delIndex];
+        state.sessions = state.sessions.filter(function(s){ return s.id!==delId; });
         saveSessions(); refreshAll();
+        toastWithAction(t("toastDeleted"), t("btnUndo"), function(){
+          // Put it back where it was — keeps chronological order in the list intact.
+          state.sessions.splice(Math.min(delIndex, state.sessions.length), 0, removed);
+          saveSessions(); refreshAll();
+          toast(t("toastRestoredEntry"));
+        });
       }
     }
     if(el.dataset.act === "exclude"){
@@ -1646,7 +1922,7 @@
   // ---------- app version & updates ----------
   // APP_VERSION is baked into this file at build/deploy time.
   // version.json is published alongside it and is the source of truth for "what's live".
-  var APP_VERSION = "2.2.0";
+  var APP_VERSION = "2.3.0";
   var LAST_UPDATE_KEY = "ministry-last-update";
   var PENDING_UPDATE_KEY = "ministry-pending-update";
   var LAST_BACKUP_KEY = "ministry-last-backup";
@@ -1915,6 +2191,41 @@
     document.getElementById("setAccentColor").value = state.settings.accentColor || "#0F6E56";
     renderAccentPresets();
     renderVersionInfo();
+    renderStorageStatus();
+  }
+
+  // Shows how fresh the last backup is, and whether the browser has agreed
+  // not to silently evict this app's data under storage pressure.
+  function renderStorageStatus(){
+    var backupEl = document.getElementById("lastBackupStatus");
+    if(backupEl){
+      var raw = safeGetLocal(LAST_BACKUP_KEY);
+      var t0 = raw ? new Date(raw).getTime() : NaN;
+      if(!raw || isNaN(t0)){
+        backupEl.textContent = t("lastBackupNever");
+      } else {
+        var days = Math.floor((Date.now()-t0)/86400000);
+        backupEl.textContent = t("lastBackupPrefix")+" "+(days<=0 ? t("lastBackupToday") : days+" "+t("daysAgoSuffix"));
+      }
+    }
+    var persistEl = document.getElementById("persistStorageStatus");
+    if(persistEl){
+      if(!(navigator.storage && navigator.storage.persisted)){
+        persistEl.textContent = "";
+      } else {
+        navigator.storage.persisted().then(function(persisted){
+          persistEl.textContent = t("persistStoragePrefix")+" "+(persisted ? t("persistStorageYes") : t("persistStorageNo"));
+        }).catch(function(){ persistEl.textContent = ""; });
+      }
+    }
+  }
+
+  // Asks the browser not to silently clear this site's storage under disk
+  // pressure. Best-effort and silent — most browsers grant it automatically
+  // once the app is used a bit / installed; nothing to do if it's refused.
+  function requestPersistentStorage(){
+    if(!(navigator.storage && navigator.storage.persist)) return;
+    navigator.storage.persist().catch(function(){});
   }
   document.getElementById("setGoal").addEventListener("change", function(e){
     var v = parseInt(e.target.value,10);
@@ -2041,6 +2352,12 @@
   document.getElementById("updateConfirm").onclick = performUpdate;
   document.getElementById("goalReviewSkip").onclick = skipGoalReview;
   document.getElementById("goalReviewSave").onclick = saveGoalReviewNote;
+  document.getElementById("storageFullClose").onclick = closeStorageFullModal;
+  document.getElementById("storageFullBackupBtn").onclick = function(){
+    saveBackupNow();
+    toast(t("toastBackupSaved"));
+    closeStorageFullModal();
+  };
   document.getElementById("manCancel").onclick = closeManualModal;
   document.getElementById("manSave").onclick = saveManualEntry;
   document.getElementById("manHours").addEventListener("input", renderDurationChips);
@@ -2063,7 +2380,12 @@
     startTicking();
     setView("main");
     startAutoUpdateChecks();
+    requestPersistentStorage();
     setTimeout(maybeStartGoalReview, 900);
+    setTimeout(maybeShowBackupReminder, 1600);
+    // beforeinstallprompt can fire before the goal-review modal has closed;
+    // one retry a bit later covers that without extra event wiring.
+    setTimeout(maybeShowInstallBanner, 2600);
   })();
 
   if("serviceWorker" in navigator){
