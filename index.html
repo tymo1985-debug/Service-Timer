@@ -120,6 +120,10 @@
   .month-total{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--teal-light); border:1px solid var(--teal-mid); border-radius:12px; padding:11px 14px; margin-bottom:12px; }
   .month-total .mt-label{ font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.07em; }
   .month-total .mt-value{ font-size:18px; font-weight:600; color:var(--teal-deep); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .goal-review-inline{ background:var(--paper-2); border:1px solid var(--amber); border-radius:12px; padding:10px 12px; margin:-4px 0 12px; }
+  .goal-review-inline .gri-label{ font-size:12px; color:var(--amber); font-weight:600; }
+  .goal-review-inline .gri-note{ font-size:13px; color:var(--ink-soft); margin-top:6px; line-height:1.5; white-space:pre-wrap; }
+  .goal-review-inline .note-btn{ margin-top:8px; padding:9px; font-size:13px; }
   .cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
   .cal-dow{ font-size:10px; color:var(--ink-faint); text-align:center; padding-bottom:4px; }
   .cal-day{ aspect-ratio:1; border-radius:10px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; cursor:pointer; position:relative; padding:2px; }
@@ -289,6 +293,7 @@
         <span class="mt-label" id="calTotalLabel">Всего за месяц</span>
         <span class="mt-value" id="calTotalValue">0 ч 0 мин</span>
       </div>
+      <div id="calGoalNote"></div>
       <div class="cal-grid" id="calGrid"></div>
       <div id="dayDetail"></div>
     </section>
@@ -483,6 +488,23 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="goalReviewOverlay" role="dialog" aria-modal="true" aria-labelledby="goalReviewTitle">
+  <div class="modal" tabindex="-1">
+    <h3 id="goalReviewTitle" data-i18n="goalReviewTitle">Цель за месяц не выполнена</h3>
+    <div class="field">
+      <div id="goalReviewSummary" style="font-size:14px; color:var(--ink-soft);"></div>
+    </div>
+    <div class="field">
+      <label data-i18n="goalReviewNoteLabel">Причина (по желанию)</label>
+      <textarea id="goalReviewNote" rows="4" maxlength="2000" data-i18n-placeholder="goalReviewPlaceholder"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="goalReviewSkip" data-i18n="btnSkip">Пропустить</button>
+      <button class="primary" id="goalReviewSave" data-i18n="btnSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="app-core.js"></script>
@@ -524,6 +546,11 @@
       updateErrorFailed:"Не удалось выполнить обновление. Попробуйте позже.",
       updateDataSafeNote:"Обновление не удаляет сохранённые данные — они хранятся на этом устройстве. Но перед обновлением рекомендуем сохранить резервную копию на случай сбоя.",
       btnSaveBackupNow:"Сохранить резервную копию", updateBackupPending:"Сначала сохраните резервную копию", updateBackupDone:"Резервная копия сохранена ✓",
+      goalReviewTitle:"Цель за месяц не выполнена", goalReviewNoteLabel:"Причина (по желанию)",
+      goalReviewPlaceholder:"Например: болел, был в отъезде, изменились обстоятельства…",
+      goalReviewSummaryPrefix:"Выполнено", goalReviewOf:"из", goalReviewShort:"не хватило",
+      goalReviewNotMetLabel:"Не хватило до цели", btnAddGoalNote:"+ Добавить заметку о причине", btnEditNote:"Изменить заметку",
+      btnSkip:"Пропустить", toastGoalNoteSaved:"Заметка сохранена",
       backupHint:"Резервная копия сохраняет все записи и настройки в файл JSON, который можно восстановить позже на любом устройстве.",
       noteModalTitleNew:"Заметка о служении", noteModalTitleAfterStop:"Заметка о завершённом служении",
       manualModalTitle:"Запись вручную",
@@ -578,6 +605,11 @@
       updateErrorFailed:"Не вдалося виконати оновлення. Спробуйте пізніше.",
       updateDataSafeNote:"Оновлення не видаляє збережені дані — вони зберігаються на цьому пристрої. Але перед оновленням радимо зберегти резервну копію на випадок збою.",
       btnSaveBackupNow:"Зберегти резервну копію", updateBackupPending:"Спочатку збережіть резервну копію", updateBackupDone:"Резервну копію збережено ✓",
+      goalReviewTitle:"Ціль за місяць не виконана", goalReviewNoteLabel:"Причина (за бажанням)",
+      goalReviewPlaceholder:"Наприклад: хворів, був у від'їзді, змінились обставини…",
+      goalReviewSummaryPrefix:"Виконано", goalReviewOf:"з", goalReviewShort:"не вистачило",
+      goalReviewNotMetLabel:"Не вистачило до цілі", btnAddGoalNote:"+ Додати нотатку про причину", btnEditNote:"Змінити нотатку",
+      btnSkip:"Пропустити", toastGoalNoteSaved:"Нотатку збережено",
       backupHint:"Резервна копія зберігає всі записи та налаштування у файл JSON, який можна відновити пізніше на будь-якому пристрої.",
       noteModalTitleNew:"Нотатка про служіння", noteModalTitleAfterStop:"Нотатка про завершене служіння",
       manualModalTitle:"Запис вручну",
@@ -632,6 +664,11 @@
       updateErrorFailed:"Update fehlgeschlagen. Bitte später erneut versuchen.",
       updateDataSafeNote:"Beim Update werden gespeicherte Daten nicht gelöscht — sie bleiben auf diesem Gerät. Vor dem Update empfehlen wir dennoch ein Backup für den Fall eines Fehlers.",
       btnSaveBackupNow:"Backup jetzt speichern", updateBackupPending:"Bitte zuerst ein Backup speichern", updateBackupDone:"Backup gespeichert ✓",
+      goalReviewTitle:"Monatsziel nicht erreicht", goalReviewNoteLabel:"Grund (optional)",
+      goalReviewPlaceholder:"Z. B.: krank, verreist, geänderte Umstände…",
+      goalReviewSummaryPrefix:"Erreicht", goalReviewOf:"von", goalReviewShort:"fehlten",
+      goalReviewNotMetLabel:"Bis zum Ziel fehlten", btnAddGoalNote:"+ Grund hinzufügen", btnEditNote:"Notiz bearbeiten",
+      btnSkip:"Überspringen", toastGoalNoteSaved:"Notiz gespeichert",
       backupHint:"Das Backup speichert alle Einträge und Einstellungen in einer JSON-Datei, die später auf jedem Gerät wiederhergestellt werden kann.",
       noteModalTitleNew:"Notiz zum Dienst", noteModalTitleAfterStop:"Notiz zum abgeschlossenen Dienst",
       manualModalTitle:"Manueller Eintrag",
@@ -686,6 +723,11 @@
       updateErrorFailed:"Update failed. Please try again later.",
       updateDataSafeNote:"Updating never deletes your saved data — it stays on this device. Still, we recommend saving a backup before updating in case something goes wrong.",
       btnSaveBackupNow:"Save backup now", updateBackupPending:"Save a backup first", updateBackupDone:"Backup saved ✓",
+      goalReviewTitle:"Monthly goal not met", goalReviewNoteLabel:"Reason (optional)",
+      goalReviewPlaceholder:"E.g.: was sick, traveling, circumstances changed…",
+      goalReviewSummaryPrefix:"Reached", goalReviewOf:"of", goalReviewShort:"short by",
+      goalReviewNotMetLabel:"Short of the goal by", btnAddGoalNote:"+ Add a reason", btnEditNote:"Edit note",
+      btnSkip:"Skip", toastGoalNoteSaved:"Note saved",
       backupHint:"The backup saves all entries and settings to a JSON file that can be restored later on any device.",
       noteModalTitleNew:"Service note", noteModalTitleAfterStop:"Note for the completed service",
       manualModalTitle:"Manual entry",
@@ -715,6 +757,7 @@
   var state = {
     sessions: [],
     settings: { goalHours: 30, theme: "auto", timeFormat: 24, weekStart: 1, lang: "ru", accentColor: "#0F6E56" },
+    goalNotes: {},   // { "2026-07": { note, dismissedAt, updatedAt } } — why a month's goal was missed
     view: "main",
     calMonth: new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0"),
     selectedDay: null,
@@ -749,17 +792,21 @@
   // ---------- storage (browser localStorage — persists on this device/browser) ----------
   var appStorage = ServiceTimerCore.createStorage(localStorage);
   async function loadState(){
-    try{ var data=appStorage.load(); state.sessions=data.sessions; state.settings=data.settings; }
-    catch(e){ state.sessions=[]; state.settings=Object.assign({},ServiceTimerCore.DEFAULT_SETTINGS); toast(t("toastImportFail")); }
+    try{ var data=appStorage.load(); state.sessions=data.sessions; state.settings=data.settings; state.goalNotes=data.goalNotes||{}; }
+    catch(e){ state.sessions=[]; state.settings=Object.assign({},ServiceTimerCore.DEFAULT_SETTINGS); state.goalNotes={}; toast(t("toastImportFail")); }
     applyTheme();
   }
   async function saveSessions(){
-    try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings}); state.sessions=saved.sessions; }
+    try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings,goalNotes:state.goalNotes}); state.sessions=saved.sessions; }
     catch(e){ toast(t("toastSaveDataFail")); }
   }
   async function saveSettings(){
-    try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings}); state.settings=saved.settings; }
+    try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings,goalNotes:state.goalNotes}); state.settings=saved.settings; }
     catch(e){ toast(t("toastSaveSettingsFail")); }
+  }
+  async function saveGoalNotes(){
+    try{ var saved=appStorage.save({sessions:state.sessions,settings:state.settings,goalNotes:state.goalNotes}); state.goalNotes=saved.goalNotes; }
+    catch(e){ toast(t("toastSaveDataFail")); }
   }
 
   // ---------- date helpers ----------
@@ -788,6 +835,33 @@
     return pad(h)+":"+pad(m)+":"+pad(sec);
   }
   function monthKeyOf(dateStr){ return dateStr.slice(0,7); }
+  // "YYYY-MM" strings sort and compare correctly as plain strings, so month
+  // arithmetic only needs to go through Date for the +/- delta itself.
+  function monthKeyOffset(monthKey, delta){
+    var parts = monthKey.split("-").map(Number);
+    var d = new Date(parts[0], parts[1]-1+delta, 1);
+    return d.getFullYear()+"-"+pad(d.getMonth()+1);
+  }
+  function monthTotalMs(monthKey){
+    var total = 0;
+    state.sessions.forEach(function(s){
+      if(s.excluded) return;
+      if(dateKey(new Date(s.start)).slice(0,7) !== monthKey) return;
+      total += durationMs(s);
+    });
+    return total;
+  }
+  function earliestSessionMonthKey(){
+    var min = null;
+    state.sessions.forEach(function(s){
+      var mk = dateKey(new Date(s.start)).slice(0,7);
+      if(!min || mk < min) min = mk;
+    });
+    return min;
+  }
+  function monthGoalMet(monthKey){
+    return monthTotalMs(monthKey) >= state.settings.goalHours*3600000;
+  }
 
   function activeSession(){
     for(var i=state.sessions.length-1;i>=0;i--){ if(!state.sessions[i].end) return state.sessions[i]; }
@@ -994,6 +1068,101 @@
   function startTicking(){
     if(state.tickHandle) clearInterval(state.tickHandle);
     state.tickHandle = setInterval(function(){ if(activeSession()) renderTimer(); }, 1000);
+  }
+
+  // ---------- monthly goal review ----------
+  // When a past month closes without hitting the goal, the app prompts once for
+  // a short note on why — separate from the per-session notes on the main page,
+  // which describe an individual visit rather than the month as a whole.
+  var goalReviewQueue = [];
+
+  // Walks every completed month between the first tracked session and last
+  // month, collecting ones that missed the goal and haven't been noted or
+  // explicitly skipped yet. Capped so a very old/unused install can't loop for ages.
+  function buildGoalReviewQueue(){
+    var minKey = earliestSessionMonthKey();
+    if(!minKey) return [];
+    var prevKey = monthKeyOffset(todayKey().slice(0,7), -1);
+    if(prevKey < minKey) return [];
+    var queue = [], k = minKey, guard = 0;
+    while(k <= prevKey && guard < 240){
+      guard++;
+      var rec = state.goalNotes[k];
+      var resolved = rec && (rec.note || rec.dismissedAt);
+      if(!resolved && !monthGoalMet(k)) queue.push(k);
+      k = monthKeyOffset(k, 1);
+    }
+    return queue;
+  }
+
+  function openGoalReviewModal(monthKey){
+    var totalMs = monthTotalMs(monthKey), goalMs = state.settings.goalHours*3600000;
+    document.getElementById("goalReviewTitle").textContent = t("goalReviewTitle")+" — "+monthTitle(monthKey);
+    document.getElementById("goalReviewSummary").textContent =
+      t("goalReviewSummaryPrefix")+" "+fmtDurationShort(totalMs)+" "+t("goalReviewOf")+" "+state.settings.goalHours+t("durH").trim()+
+      " · "+t("goalReviewShort")+": "+fmtDurationShort(Math.max(0,goalMs-totalMs));
+    var existing = state.goalNotes[monthKey];
+    document.getElementById("goalReviewNote").value = existing && existing.note ? existing.note : "";
+    var overlay = document.getElementById("goalReviewOverlay");
+    overlay.dataset.month = monthKey;
+    overlay.classList.add("open");
+  }
+  function closeGoalReviewModal(){
+    document.getElementById("goalReviewOverlay").classList.remove("open");
+  }
+  function advanceGoalReviewQueue(){
+    goalReviewQueue.shift();
+    if(goalReviewQueue.length) setTimeout(function(){ openGoalReviewModal(goalReviewQueue[0]); }, 350);
+  }
+  // "Не сейчас": stop asking about this month, but without forcing any text in —
+  // some months genuinely don't need an explanation on record.
+  async function skipGoalReview(){
+    var monthKey = document.getElementById("goalReviewOverlay").dataset.month;
+    var existing = state.goalNotes[monthKey] || {};
+    state.goalNotes[monthKey] = { note: existing.note||"", dismissedAt: new Date().toISOString(), updatedAt: existing.updatedAt||null };
+    await saveGoalNotes();
+    closeGoalReviewModal();
+    advanceGoalReviewQueue();
+  }
+  async function saveGoalReviewNote(){
+    var monthKey = document.getElementById("goalReviewOverlay").dataset.month;
+    var text = document.getElementById("goalReviewNote").value.trim();
+    state.goalNotes[monthKey] = { note: text, dismissedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    await saveGoalNotes();
+    closeGoalReviewModal();
+    toast(t("toastGoalNoteSaved"));
+    if(state.view==="calendar") renderCalendar();
+    advanceGoalReviewQueue();
+  }
+  // Called once on startup, well after the update-banner check so the two
+  // prompts don't fight for the screen.
+  function maybeStartGoalReview(){
+    if(goalReviewQueue.length) return;
+    if(document.getElementById("updateOverlay").classList.contains("open")){ setTimeout(maybeStartGoalReview, 1000); return; }
+    goalReviewQueue = buildGoalReviewQueue();
+    if(goalReviewQueue.length) openGoalReviewModal(goalReviewQueue[0]);
+  }
+
+  // Lets the person add/edit the reason directly from the calendar, for any
+  // past month — not just the moment the automatic prompt appears.
+  function renderGoalReviewInline(){
+    var box = document.getElementById("calGoalNote");
+    if(!box) return;
+    var monthKey = state.calMonth, curKey = todayKey().slice(0,7);
+    if(monthKey >= curKey){ box.innerHTML=""; return; } // month still in progress — nothing to review yet
+    var totalMs = monthTotalMs(monthKey), goalMs = state.settings.goalHours*3600000;
+    if(totalMs >= goalMs){ box.innerHTML=""; return; }
+    var rec = state.goalNotes[monthKey];
+    var noteText = rec && rec.note ? rec.note : "";
+    box.innerHTML =
+      "<div class='goal-review-inline'>"+
+        "<div class='gri-label'>"+t("goalReviewNotMetLabel")+": "+fmtDurationShort(Math.max(0,goalMs-totalMs))+"</div>"+
+        (noteText
+          ? "<div class='gri-note'>"+escapeHtml(noteText)+"</div><button class='note-btn' id='griEditBtn'>"+t("btnEditNote")+"</button>"
+          : "<button class='note-btn' id='griAddBtn'>"+t("btnAddGoalNote")+"</button>")+
+      "</div>";
+    var btn = document.getElementById("griAddBtn") || document.getElementById("griEditBtn");
+    if(btn) btn.onclick = function(){ openGoalReviewModal(monthKey); };
   }
 
   // ---------- actions ----------
@@ -1230,6 +1399,7 @@
       cell.onclick = function(dkClosure){ return function(){ state.selectedDay = (state.selectedDay===dkClosure)?null:dkClosure; renderCalendar(); }; }(dk);
       grid.appendChild(cell);
     }
+    renderGoalReviewInline();
     renderDayDetail();
   }
   function renderDayDetail(){
@@ -1476,7 +1646,7 @@
   // ---------- app version & updates ----------
   // APP_VERSION is baked into this file at build/deploy time.
   // version.json is published alongside it and is the source of truth for "what's live".
-  var APP_VERSION = "2.1.0";
+  var APP_VERSION = "2.2.0";
   var LAST_UPDATE_KEY = "ministry-last-update";
   var PENDING_UPDATE_KEY = "ministry-pending-update";
   var LAST_BACKUP_KEY = "ministry-last-backup";
@@ -1806,7 +1976,7 @@
   // Shared by the settings backup button and the pre-update safety prompt, so
   // both paths write the same file and update the same "last backup" marker.
   function buildBackupPayload(){
-    return JSON.stringify({schemaVersion:ServiceTimerCore.SCHEMA_VERSION,exportedAt:new Date().toISOString(),appVersion:APP_VERSION,sessions:state.sessions,settings:state.settings}, null, 2);
+    return JSON.stringify({schemaVersion:ServiceTimerCore.SCHEMA_VERSION,exportedAt:new Date().toISOString(),appVersion:APP_VERSION,sessions:state.sessions,settings:state.settings,goalNotes:state.goalNotes}, null, 2);
   }
   function saveBackupNow(){
     downloadFile(buildBackupPayload(), "backup_service-log_"+todayKey()+".json", "application/json");
@@ -1828,8 +1998,10 @@
         if(!confirm(t("confirmRestoreBackup"))) return;
         state.sessions = data.sessions;
         state.settings = data.settings;
-        await saveSessions(); await saveSettings();
+        state.goalNotes = data.goalNotes || {};
+        await saveSessions(); await saveSettings(); await saveGoalNotes();
         applyTheme(); applyI18n(); renderTimer(); renderSettings();
+        if(state.view==="calendar") renderCalendar();
         toast(t("toastRestored"));
       }catch(err){ toast(t("toastImportFail")); }
     };
@@ -1867,6 +2039,8 @@
     openUpdateModal(pendingUpdateInfo);
   };
   document.getElementById("updateConfirm").onclick = performUpdate;
+  document.getElementById("goalReviewSkip").onclick = skipGoalReview;
+  document.getElementById("goalReviewSave").onclick = saveGoalReviewNote;
   document.getElementById("manCancel").onclick = closeManualModal;
   document.getElementById("manSave").onclick = saveManualEntry;
   document.getElementById("manHours").addEventListener("input", renderDurationChips);
@@ -1889,6 +2063,7 @@
     startTicking();
     setView("main");
     startAutoUpdateChecks();
+    setTimeout(maybeStartGoalReview, 900);
   })();
 
   if("serviceWorker" in navigator){

@@ -60,11 +60,29 @@
     out.accentColor=/^#[0-9a-f]{6}$/i.test(input.accentColor||"") ? input.accentColor : DEFAULT_SETTINGS.accentColor;
     return out;
   }
+  // Notes attached to a whole month explaining why the service-hours goal wasn't
+  // met, keyed by "YYYY-MM". Kept separate from per-session notes (note.comment)
+  // since those describe an individual visit, not a monthly shortfall.
+  function normalizeGoalNotes(input){
+    if(!input || typeof input !== "object") return {};
+    var out={};
+    Object.keys(input).forEach(function(key){
+      if(!/^\d{4}-\d{2}$/.test(key)) return;
+      var v=input[key];
+      if(!v || typeof v !== "object") return;
+      var note=cleanText(v.note,2000);
+      var dismissedAt=v.dismissedAt ? iso(v.dismissedAt) : null;
+      var updatedAt=v.updatedAt ? iso(v.updatedAt) : null;
+      if(!note && !dismissedAt) return; // nothing worth keeping
+      out[key]={ note:note, dismissedAt:dismissedAt, updatedAt:updatedAt };
+    });
+    return out;
+  }
   function migrate(raw){
     raw=raw && typeof raw === "object" ? raw : {};
     var sessions=Array.isArray(raw.sessions) ? raw.sessions.map(normalizeSession).filter(Boolean) : [];
     var seen={}; sessions.forEach(function(s){ if(seen[s.id]) s.id=uid(); seen[s.id]=true; });
-    return { schemaVersion:SCHEMA_VERSION, exportedAt:iso(raw.exportedAt)||new Date().toISOString(), sessions:sessions, settings:normalizeSettings(raw.settings) };
+    return { schemaVersion:SCHEMA_VERSION, exportedAt:iso(raw.exportedAt)||new Date().toISOString(), sessions:sessions, settings:normalizeSettings(raw.settings), goalNotes:normalizeGoalNotes(raw.goalNotes) };
   }
   function validateBackup(raw){
     if(!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Backup must be an object");
@@ -124,5 +142,5 @@
       }
     };
   }
-  return {SCHEMA_VERSION:SCHEMA_VERSION,DATA_KEY:DATA_KEY,TAG_IDS:TAG_IDS,DEFAULT_SETTINGS:DEFAULT_SETTINGS,uid:uid,migrate:migrate,validateBackup:validateBackup,durationMs:durationMs,mergeSessions:mergeSessions,splitSession:splitSession,createStorage:createStorage,normalizeTags:normalizeTags};
+  return {SCHEMA_VERSION:SCHEMA_VERSION,DATA_KEY:DATA_KEY,TAG_IDS:TAG_IDS,DEFAULT_SETTINGS:DEFAULT_SETTINGS,uid:uid,migrate:migrate,validateBackup:validateBackup,durationMs:durationMs,mergeSessions:mergeSessions,splitSession:splitSession,createStorage:createStorage,normalizeTags:normalizeTags,normalizeGoalNotes:normalizeGoalNotes};
 });
